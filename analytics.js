@@ -494,14 +494,16 @@ function download(name, text, type) {
 }
 
 $('exportBtn').addEventListener('click', () => {
-  const rows = [['date', 'score', 'desk_minutes', 'focus_minutes', 'break_minutes', 'paused_other_minutes', 'focus_blocks', 'sessions', 'tasks_done']];
+  const rows = [['date', 'score', 'day_rating', 'desk_minutes', 'focus_minutes', 'break_minutes', 'paused_other_minutes', 'focus_blocks', 'sessions', 'tasks_done']];
   const keys = new Set(Object.keys(store.days));
   (typeof tasks !== 'undefined' ? tasks.items : []).forEach(t => { if (t.done) keys.add(dayKey(t.done)); });
+  if (typeof journal !== 'undefined') Object.keys(journal.entries).forEach(k => keys.add(k));
   [...keys].sort().forEach(k => {
     const d = peekDay(k);
     const m = v => (v / 60).toFixed(1);
     const sc = dayScore(k);
-    rows.push([k, sc ? sc.score : '', m(deskOf(d)), m(d.focus), m(d.brk), m(d.other), d.blocks,
+    const je = typeof journalEntry === 'function' ? journalEntry(k) : null;
+    rows.push([k, sc ? sc.score : '', je ? je.rating : '', m(deskOf(d)), m(d.focus), m(d.brk), m(d.other), d.blocks,
       (d.sessions || []).length, taskStatsForDay(k).doneCount]);
   });
   download(`pomodoro-history-${dayKey(Date.now())}.csv`, rows.map(r => r.join(',')).join('\n'), 'text/csv');
@@ -510,7 +512,8 @@ $('exportBtn').addEventListener('click', () => {
 $('backupBtn').addEventListener('click', () => {
   saveStore(true);
   const data = { app: 'pomodoro', version: 1, exported: new Date().toISOString(),
-    analytics: store, tasks: typeof tasks !== 'undefined' ? tasks : null, goal: focusGoalMin };
+    analytics: store, tasks: typeof tasks !== 'undefined' ? tasks : null,
+    journal: typeof journal !== 'undefined' ? journal : null, goal: focusGoalMin };
   download(`pomodoro-backup-${dayKey(Date.now())}.json`, JSON.stringify(data), 'application/json');
 });
 $('restoreBtn').addEventListener('click', () => $('restoreFile').click());
@@ -524,6 +527,7 @@ $('restoreFile').addEventListener('change', async () => {
     store = data.analytics;
     saveStore(true);
     if (data.tasks && Array.isArray(data.tasks.items) && typeof restoreTasks === 'function') restoreTasks(data.tasks);
+    if (data.journal && data.journal.entries && typeof restoreJournal === 'function') restoreJournal(data.journal);
     if (data.goal) { setFocusGoal(Number(data.goal)); $('goalSelect').value = String(data.goal); }
     renderAnalytics();
     toast('Backup restored');

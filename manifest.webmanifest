@@ -17,6 +17,7 @@
   "shortcuts": [
     { "name": "Tasks", "url": "./#tasks" },
     { "name": "Calendar", "url": "./#calendar" },
+    { "name": "Journal", "url": "./#journal" },
     { "name": "Analytics", "url": "./#analytics" }
   ]
 }

@@ -449,3 +449,92 @@ code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--fi
   .t-actions .t-edit-label { display: none; }
   .tabs button { font-size: 14px; }
 }
+
+/* ======================================================= journal / day rating */
+:root {
+  --m-red: #d93f3f;    --m-red-ink: #ffffff;
+  --m-orange: #ef7d22; --m-orange-ink: #1a1a1a;
+  --m-yellow: #f2c230; --m-yellow-ink: #1a1a1a;
+  --m-green: #2e9d4f;  --m-green-ink: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --m-red: #e5534b;    --m-red-ink: #ffffff;
+    --m-orange: #f0883e; --m-orange-ink: #1a1a1a;
+    --m-yellow: #e3b341; --m-yellow-ink: #1a1a1a;
+    --m-green: #3fb950;  --m-green-ink: #0b0b0b;
+  }
+}
+.m-red    { --m: var(--m-red);    --m-ink: var(--m-red-ink); }
+.m-orange { --m: var(--m-orange); --m-ink: var(--m-orange-ink); }
+.m-yellow { --m: var(--m-yellow); --m-ink: var(--m-yellow-ink); }
+.m-green  { --m: var(--m-green);  --m-ink: var(--m-green-ink); }
+.mood-badge, .c-mood {
+  display: inline-block; background: var(--m); color: var(--m-ink);
+  font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 8px; white-space: nowrap; font-variant-numeric: tabular-nums;
+}
+.c-mood { font-size: 11px; padding: 1px 6px; }
+.c-mood small { font-size: inherit; }
+
+.tabs button { padding: 8px 4px; }
+.j-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.j-top h3 { font-size: 17px; }
+.j-rating-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 16px 0 8px; font-size: 13px; color: var(--muted); font-weight: 600; }
+.j-rating-label { color: var(--text); font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+.j-rating { display: grid; grid-template-columns: repeat(10, 1fr); gap: 5px; }
+.j-rating button {
+  padding: 9px 0; border-radius: 9px; font-size: 15px; font-weight: 650;
+  background: var(--field); border: 1px solid transparent; color: var(--text);
+  box-shadow: inset 0 -3px 0 var(--m);
+}
+.j-rating button:hover { border-color: var(--m); }
+.j-rating button[aria-checked="true"] { background: var(--m); color: var(--m-ink); box-shadow: none; }
+#jText {
+  width: 100%; margin-top: 14px; font: inherit; font-size: 15px; line-height: 1.55; color: var(--text);
+  background: var(--field); border: 1px solid transparent; border-radius: 10px; padding: 12px; resize: vertical; min-height: 140px;
+}
+#jText:focus { background: var(--card); border-color: var(--line); outline: 2px solid var(--accent); outline-offset: 1px; }
+.j-actions { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.j-actions .j-status { flex: 1; font-size: 13px; color: var(--muted); }
+.j-actions .danger { color: var(--down); }
+.j-stats-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.j-stats-head span { font-size: 13px; color: var(--muted); }
+.j-strip { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; margin-top: 12px; }
+.j-day {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 0 6px; border-radius: 8px;
+  background: var(--m); color: var(--m-ink); border: 2px solid transparent; font-weight: 400; min-width: 0;
+}
+.j-day b { font-size: 15px; }
+.j-day span { font-size: 10px; opacity: .85; white-space: nowrap; overflow: hidden; max-width: 100%; }
+.j-day.empty { background: transparent; color: var(--muted); border: 1px dashed var(--line); }
+.j-day.sel { border-color: var(--text); }
+.j-entry {
+  display: block; width: 100%; text-align: left; font-weight: 400; margin-top: 10px; padding: 10px 12px;
+  border: 1px solid var(--line); border-left: 5px solid var(--m); border-radius: 10px; background: var(--card);
+}
+.j-entry.sel { box-shadow: 0 0 0 1px var(--text); }
+.j-entry-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.j-entry-text {
+  margin: 6px 0 0; font-size: 14px; color: var(--muted); white-space: pre-wrap; overflow-wrap: anywhere;
+  display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+}
+
+/* calendar: tint days that have a rating */
+.cal-cell.mood { background: color-mix(in srgb, var(--m) 16%, var(--card)); border-color: color-mix(in srgb, var(--m) 55%, var(--line)); }
+.c-badges { display: inline-flex; gap: 3px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.cal-head { flex-wrap: wrap; }
+.cal-head .seg { order: 3; }
+.day-journal { margin-top: 12px; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); }
+.day-journal[class*="m-"] { border-left: 5px solid var(--m); background: color-mix(in srgb, var(--m) 8%, var(--card)); }
+.day-journal-head { display: flex; align-items: center; gap: 8px; }
+.day-journal-head button { margin-left: auto; }
+.day-journal-text { margin: 8px 0 0; font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+
+@media (max-width: 600px) {
+  .j-rating { grid-template-columns: repeat(5, 1fr); }
+  .j-strip { grid-template-columns: repeat(7, minmax(0, 1fr)); }
+  .c-badges { justify-content: flex-start; }
+  .c-mood { font-size: 10px; padding: 0 5px; }
+  .c-mood small { display: none; }
+  .tabs button { font-size: 13px; padding: 8px 2px; }
+}

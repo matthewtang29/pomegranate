@@ -1,9 +1,9 @@
 // Service worker: lets the installed app open offline.
 // Network first (so updates you push to GitHub show up), cached copy as a fallback.
-const CACHE = 'pomodoro-v1';
+const CACHE = 'pomodoro-v2';
 const ASSETS = [
   './', 'index.html', 'style.css',
-  'app.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'main.js',
+  'app.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'main.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 

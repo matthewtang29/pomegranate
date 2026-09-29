@@ -15,7 +15,8 @@ A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++,
 - **Timer tab:** set up and control sessions over USB, with a live countdown synced to the device
 - **Tasks tab:** a Todoist-style task list with natural-language quick add (`Lab report fri p1 d4 #ECE140`), priorities, difficulty ratings (1–5), projects, and Today / Upcoming / All / Done views
 - **Link tasks to sessions:** pick what you're working on and focus time is credited to that task
-- **Calendar tab:** month view of tasks due and each day's productivity score
+- **Calendar tab:** month view of tasks due, each day's productivity score, and your day rating (switch between showing both, productivity, or day rating)
+- **Journal tab:** write about your day and rate it out of 10 (1–3 red, 4–5 orange, 6–8 yellow, 9–10 green), with a 14-day overview; ratings color the calendar and are kept separate from the productivity score
 - **Analytics tab:** daily productivity score, desk / focus / break time compared with yesterday and last week, and up to 30 days of history
 - **Installable app** that works offline and reconnects to the timer automatically
 
@@ -25,7 +26,7 @@ Open the GitHub Pages link in Chrome or Edge, plug in the timer, and press **Con
 
 **Install it as an app:** on the GitHub Pages site, click the install icon at the right end of the address bar (or **⬇ Install as an app** under the timer). It then opens in its own window with a Start menu / taskbar icon, works offline, and reconnects to the timer on launch.
 
-All data (tasks, study history, settings) is stored in the browser. Use **Back up** / **Restore** on the Analytics tab to move it between browsers or into the installed app.
+All data (tasks, journal, study history, settings) is stored in the browser. Use **Back up** / **Restore** on the Analytics tab to move it between browsers or into the installed app.
 
 ## Productivity score
 
@@ -70,6 +71,7 @@ analytics.js                    Study time tracking and Analytics tab
 score.js                        Session and daily productivity scores
 tasks.js                        Tasks tab and quick-add parser
 calendar.js                     Calendar tab
+journal.js                      Journal tab (day ratings)
 main.js                         Tabs, install-as-app, start-up
 manifest.webmanifest, sw.js     Installable app (PWA) setup
 icons/                          App icons

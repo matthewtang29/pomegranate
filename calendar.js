@@ -4,6 +4,8 @@
 
 let calMonth = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth(), 1); })();
 let calSelected = dayKey(Date.now());
+let calMode = 'both';   // what the calendar colors: 'both', 'score' (productivity) or 'mood' (journal rating)
+try { const m = localStorage.getItem('pomodoro-calmode'); if (['both', 'score', 'mood'].includes(m)) calMode = m; } catch (e) {}
 const DOW = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 const MONTH_NAMES = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
@@ -14,6 +16,9 @@ function tasksDueOn(k) {
 function renderCalendar() {
   const today = dayKey(Date.now());
   $('calTitle').textContent = `${MONTH_NAMES[calMonth.getMonth()]} ${calMonth.getFullYear()}`;
+  document.querySelectorAll('[data-calmode]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.calmode === calMode)));
+  $('legendScore').hidden = calMode === 'mood';
+  $('legendMood').hidden = calMode === 'score';
   const grid = $('calGrid');
   grid.textContent = '';
   DOW.forEach(d => grid.append(el('div', 'cal-dow', d)));
@@ -34,8 +39,18 @@ function renderCalendar() {
 
     const top = el('div', 'c-top');
     top.append(el('span', 'c-date', String(d.getDate())));
-    const sc = dayScore(k);
-    if (sc) top.append(scoreBadge(sc.score, 'c-score'));
+    const badges = el('span', 'c-badges');
+    const sc = calMode !== 'mood' ? dayScore(k) : null;
+    const je = calMode !== 'score' && typeof journalEntry === 'function' ? journalEntry(k) : null;
+    if (je) {
+      cell.classList.add('mood', `m-${moodBand(je.rating)}`);
+      const mb = moodBadge(je.rating, 'c-mood');
+      mb.textContent = String(je.rating);
+      mb.append(el('small', 'of10', '/10'));   // hidden on narrow screens
+      badges.append(mb);
+    }
+    if (sc) badges.append(scoreBadge(sc.score, 'c-score'));
+    top.append(badges);
     cell.append(top);
 
     const due = tasksDueOn(k);
@@ -54,7 +69,8 @@ function renderCalendar() {
     }
 
     const label = [d.toLocaleDateString([], { weekday: 'long', month: 'long', day: 'numeric' })];
-    if (sc) label.push(`score ${sc.score}`);
+    if (je) label.push(`day rated ${je.rating} out of 10`);
+    if (sc) label.push(`productivity score ${sc.score}`);
     if (due.length) label.push(`${due.length} task${due.length > 1 ? 's' : ''} due`);
     cell.setAttribute('aria-label', label.join(', '));
     cell.setAttribute('aria-pressed', String(k === calSelected));
@@ -87,6 +103,23 @@ function renderCalDay() {
     head.append(el('span', 'score-label', 'Upcoming'));
   }
   box.append(head);
+
+  // journal entry for the day
+  const je = typeof journalEntry === 'function' ? journalEntry(k) : null;
+  if (je || k <= today) {
+    const jbox = el('div', 'day-journal' + (je ? ` m-${moodBand(je.rating)}` : ''));
+    const jh = el('div', 'day-journal-head');
+    const jt = el('b', null, 'Journal');
+    jh.append(jt);
+    if (je) jh.append(moodBadge(je.rating));
+    const jbtn = el('button', 'small', je ? 'Edit' : 'Write about this day');
+    jbtn.type = 'button';
+    jbtn.addEventListener('click', () => openJournal(k));
+    jh.append(jbtn);
+    jbox.append(jh);
+    if (je && je.text) jbox.append(el('p', 'day-journal-text', je.text));
+    box.append(jbox);
+  }
 
   const day = peekDay(k);
   if (deskOf(day) >= 1) {
@@ -154,3 +187,9 @@ $('calToday').addEventListener('click', () => {
   calSelected = dayKey(d);
   renderCalendar();
 });
+
+document.querySelectorAll('[data-calmode]').forEach(b => b.addEventListener('click', () => {
+  calMode = b.dataset.calmode;
+  try { localStorage.setItem('pomodoro-calmode', calMode); } catch (e) {}
+  renderCalendar();
+}));

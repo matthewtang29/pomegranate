@@ -1,7 +1,7 @@
 // ================================================================= START-UP
 // Tabs, installable-app setup, and first render. Loaded last.
 
-const VIEWS = { timer: 'timerView', tasks: 'tasksView', calendar: 'calView', analytics: 'analyticsView' };
+const VIEWS = { timer: 'timerView', tasks: 'tasksView', calendar: 'calView', journal: 'journalView', analytics: 'analyticsView' };
 
 function showTab(name) {
   if (!VIEWS[name]) name = 'timer';
@@ -11,6 +11,7 @@ function showTab(name) {
   if (name === 'analytics') renderAnalytics();
   if (name === 'tasks') { renderProjectLists(); renderTasks(); }
   if (name === 'calendar') renderCalendar();
+  if (name === 'journal') renderJournal();
   if (name === 'timer') renderTimerTask();
   history.replaceState(null, '', name === 'timer' ? location.pathname + location.search : '#' + name);
 }
