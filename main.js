@@ -44,7 +44,19 @@ const isInstalledApp = window.matchMedia('(display-mode: standalone)').matches |
                        window.matchMedia('(display-mode: window-controls-overlay)').matches;
 
 if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  const hadWorker = !!navigator.serviceWorker.controller;
+  // updateViaCache: 'none' -> always check GitHub for a newer sw.js
+  navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+    .then(reg => reg.update())
+    .catch(() => {});
+  // A new version was just installed: offer to reload into it
+  // (not automatic, so a running session isn't cut off)
+  let offered = false;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadWorker || offered) return;
+    offered = true;
+    toast('A new version of the app is ready', 'Reload', () => location.reload());
+  });
 }
 
 let installPrompt = null;

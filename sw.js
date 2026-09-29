@@ -1,6 +1,8 @@
 // Service worker: lets the installed app open offline.
-// Network first (so updates you push to GitHub show up), cached copy as a fallback.
-const CACHE = 'pomodoro-v2';
+// Network first, and every request double-checks with GitHub that the file hasn't
+// changed (instead of trusting the browser's 10-minute cache), so updates you push
+// show up the next time the app opens. The cached copy is only used when offline.
+const CACHE = 'pomodoro-v3';
 const ASSETS = [
   './', 'index.html', 'style.css',
   'app.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'main.js',
@@ -21,12 +23,15 @@ self.addEventListener('fetch', e => {
   const req = e.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(req)
+    fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' })
       .then(res => {
-        const copy = res.clone();
-        caches.open(CACHE).then(c => c.put(req, copy));
+        if (res.ok) {
+          const copy = res.clone();
+          caches.open(CACHE).then(c => c.put(req, copy));
+        }
         return res;
       })
-      .catch(() => caches.match(req).then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
+      .catch(() => caches.match(req, { ignoreSearch: true })
+        .then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
   );
 });
