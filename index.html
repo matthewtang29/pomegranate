@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pomodoro</title>
+<meta name="description" content="Control Matthew Tang's Arduino Pomodoro timer over USB, plan tasks, and track study time.">
+<meta name="theme-color" content="#d9383e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span>●</span> Pomodoro</h1>
+    <span id="pill" class="pill">Not connected</span>
+    <button id="muteBtn" class="icon-btn" aria-pressed="false" disabled title="Turn the timer's buzzer on or off">
+      <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
+      <svg class="off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="m23 9-6 6"/><path d="m17 9 6 6"/></svg>
+      <span id="muteLabel">Mute</span>
+    </button>
+    <button id="connectBtn" class="primary">Connect</button>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="View">
+    <button role="tab" id="tabTimer" data-tab="timer" aria-selected="true" aria-controls="timerView">Timer</button>
+    <button role="tab" id="tabTasks" data-tab="tasks" aria-selected="false" aria-controls="tasksView">Tasks</button>
+    <button role="tab" id="tabCal" data-tab="calendar" aria-selected="false" aria-controls="calView">Calendar</button>
+    <button role="tab" id="tabStats" data-tab="analytics" aria-selected="false" aria-controls="analyticsView">Analytics</button>
+  </nav>
+
+  <div id="unsupported" class="banner" hidden>
+    Your browser can't talk to USB devices. Open this page in <b>Chrome</b> or <b>Edge</b> on a computer.
+  </div>
+
+  <div id="timerView" role="tabpanel" aria-labelledby="tabTimer">
+  <main class="card" id="card" data-phase="idle">
+    <div class="dial">
+      <svg viewBox="0 0 240 240" aria-hidden="true">
+        <circle class="track" cx="120" cy="120" r="108"/>
+        <circle class="prog" id="ring" cx="120" cy="120" r="108"/>
+      </svg>
+      <div class="dial-text">
+        <div class="phase" id="phase">Not connected</div>
+        <div class="time" id="time">25:00</div>
+        <div class="sub" id="sub">Plug in, then press Connect</div>
+      </div>
+    </div>
+
+    <!-- Which task this session is for -->
+    <div class="task-link">
+      <label for="taskSelect">Working on</label>
+      <select id="taskSelect"></select>
+      <button id="taskDoneBtn" type="button" class="small" hidden>✓ Mark done</button>
+    </div>
+
+    <!-- Set up a session -->
+    <section class="panel" id="setupPanel">
+      <div class="fields">
+        <div class="field">
+          <label for="focusIn">Focus (min)</label>
+          <div class="stepper">
+            <button type="button" data-step="focusIn" data-by="-5" aria-label="Less focus time">−</button>
+            <input id="focusIn" type="number" min="1" max="99" value="25" inputmode="numeric">
+            <button type="button" data-step="focusIn" data-by="5" aria-label="More focus time">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="breakIn">Break (min)</label>
+          <div class="stepper">
+            <button type="button" data-step="breakIn" data-by="-5" aria-label="Less break time">−</button>
+            <input id="breakIn" type="number" min="1" max="99" value="5" inputmode="numeric">
+            <button type="button" data-step="breakIn" data-by="5" aria-label="More break time">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="cyclesIn">Cycles</label>
+          <div class="stepper">
+            <button type="button" data-step="cyclesIn" data-by="-1" aria-label="Fewer cycles">−</button>
+            <input id="cyclesIn" type="number" min="1" max="20" value="4" inputmode="numeric">
+            <button type="button" data-step="cyclesIn" data-by="1" aria-label="More cycles">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="total" id="totalHint"></div>
+      <div class="presets">
+        <button type="button" data-preset="25,5,4">Classic 25/5 × 4</button>
+        <button type="button" data-preset="50,10,3">Deep work 50/10 × 3</button>
+        <button type="button" data-preset="15,5,6">Sprints 15/5 × 6</button>
+      </div>
+      <div class="row">
+        <button id="startBtn" class="primary">Start session</button>
+        <button id="autoBtn" title="25 min focus, 5 min break, asks to continue after each cycle">Auto mode</button>
+      </div>
+    </section>
+
+    <!-- Running -->
+    <section class="panel" id="sessionPanel" hidden>
+      <div class="row">
+        <button id="pauseBtn" class="primary">Pause</button>
+        <button id="exitBtn">Exit</button>
+      </div>
+    </section>
+
+    <!-- Auto mode: continue? -->
+    <section class="panel" id="continuePanel" hidden>
+      <p class="prompt">Start another cycle?</p>
+      <div class="row">
+        <button id="yesBtn" class="primary">Yes, keep going</button>
+        <button id="noBtn">No, finish</button>
+      </div>
+    </section>
+
+    <div class="stats">
+      <div><b id="doneStat">0</b><span>focus sessions</span></div>
+      <div><b id="totalStat">0m</b><span>total focus time</span></div>
+    </div>
+  </main>
+
+  <div class="extras">
+    <label><input type="checkbox" id="soundChk" checked> Also play a sound on this computer when a timer ends</label>
+    <button id="installBtn" type="button" class="small install" hidden>⬇ Install as an app</button>
+    <details>
+      <summary>Serial log</summary>
+      <pre id="log"></pre>
+      <label><input type="checkbox" id="showStates"> Show STATE lines</label>
+      <div class="cmdrow" style="margin-top:8px">
+        <input id="cmdIn" placeholder="Send a command, e.g. START 25 5 4" autocomplete="off">
+        <button id="cmdBtn">Send</button>
+      </div>
+    </details>
+  </div>
+
+  <p class="hint">
+    Works in Chrome or Edge. Close the Arduino IDE's Serial Monitor first, since only one program can use the port at a time.
+    Connecting restarts the Uno, so you'll hear the welcome tune. Press <kbd>Space</kbd> to pause or resume.
+  </p>
+  </div>
+
+  <!-- ============================== TASKS ============================== -->
+  <div id="tasksView" role="tabpanel" aria-labelledby="tabTasks" hidden>
+    <form class="card pad quick-add" id="addForm" autocomplete="off">
+      <div class="qa-row">
+        <input id="qaInput" aria-label="New task" placeholder="Add a task… e.g. Circuits lab report fri p1 d4 #ECE140">
+        <button class="primary" type="submit">Add</button>
+      </div>
+      <div class="qa-preview" id="qaPreview" aria-live="polite"></div>
+      <div class="qa-opts">
+        <label>Due <input type="date" id="qaDue"></label>
+        <label>Priority
+          <select id="qaPri">
+            <option value="1">P1 · urgent</option><option value="2">P2 · high</option>
+            <option value="3">P3 · medium</option><option value="4" selected>P4 · normal</option>
+          </select>
+        </label>
+        <div class="diff-field">
+          <span>Difficulty</span>
+          <div class="diff-pick" id="qaDiff" role="radiogroup" aria-label="Difficulty"></div>
+        </div>
+        <label>Project <input id="qaProj" list="projList" placeholder="none" size="10"></label>
+      </div>
+      <p class="qa-help">Shortcuts while typing: <code>today</code> <code>tmr</code> <code>fri</code> <code>oct 3</code> <code>10/3</code> for the date,
+        <code>p1</code>–<code>p4</code> priority, <code>d1</code>–<code>d5</code> difficulty, <code>#course</code> project.</p>
+    </form>
+    <datalist id="projList"></datalist>
+
+    <div class="task-toolbar">
+      <div class="seg" id="taskViewSeg" role="group" aria-label="Task view">
+        <button type="button" data-view="today" aria-pressed="true">Today</button>
+        <button type="button" data-view="upcoming" aria-pressed="false">Upcoming</button>
+        <button type="button" data-view="all" aria-pressed="false">All</button>
+        <button type="button" data-view="done" aria-pressed="false">Done</button>
+      </div>
+      <select id="projFilter" aria-label="Project filter"></select>
+    </div>
+    <div id="taskList"></div>
+  </div>
+
+  <!-- ============================== CALENDAR ============================== -->
+  <div id="calView" role="tabpanel" aria-labelledby="tabCal" hidden>
+    <div class="cal-head">
+      <h2 id="calTitle"></h2>
+      <div class="cal-nav">
+        <button type="button" id="calPrev" class="small" aria-label="Previous month">‹</button>
+        <button type="button" id="calToday" class="small">Today</button>
+        <button type="button" id="calNext" class="small" aria-label="Next month">›</button>
+      </div>
+    </div>
+    <div class="card cal-card">
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="cal-legend">
+        <span>Daily score</span>
+        <span class="q"><i style="background:var(--q1)"></i>0–19</span>
+        <span class="q"><i style="background:var(--q2)"></i>20–39</span>
+        <span class="q"><i style="background:var(--q3)"></i>40–59</span>
+        <span class="q"><i style="background:var(--q4)"></i>60–79</span>
+        <span class="q"><i style="background:var(--q5)"></i>80–100</span>
+      </div>
+    </div>
+    <div class="card pad a-section" id="calDay" style="margin-top:16px"></div>
+  </div>
+
+  <!-- ============================== ANALYTICS ============================== -->
+  <div id="analyticsView" role="tabpanel" aria-labelledby="tabStats" hidden>
+    <div class="a-head"><h2>Today</h2><span id="todayLabel"></span></div>
+    <div class="card pad score-card a-section">
+      <div class="score-top">
+        <div class="score-hero">
+          <div class="score-label">Productivity score</div>
+          <div class="score-value"><span id="scoreValue">—</span><small>/100</small></div>
+          <div class="t-delta" id="scoreDelta"></div>
+          <div class="t-sub" id="scoreAvg"></div>
+          <label class="goal">Focus goal
+            <select id="goalSelect">
+              <option value="60">1h</option><option value="90">1h 30m</option><option value="120">2h</option><option value="180">3h</option>
+              <option value="240">4h</option><option value="300">5h</option><option value="360">6h</option>
+            </select>
+          </label>
+        </div>
+        <div class="score-parts" id="scoreParts"></div>
+      </div>
+      <details class="score-how">
+        <summary>How the score works</summary>
+        <div class="how-body">
+          <p><b>Daily score</b> combines up to three parts. Any part with nothing to measure yet is left out and the others are scaled up.</p>
+          <ul>
+            <li><b>Focus time (40%)</b>: focus minutes compared with your daily focus goal (set above).</li>
+            <li><b>Tasks done (30%)</b>: tasks due that day (or finished that day), weighted by difficulty. A difficulty-5 task counts five times as much as a difficulty-1 task.</li>
+            <li><b>Session quality (30%)</b>: the average of that day's session scores, weighted by focus time.</li>
+          </ul>
+          <p><b>Session score</b> rates each timer session:</p>
+          <ul>
+            <li><b>Completion (45%)</b>: full marks if you finished all cycles or checked off a task during it; otherwise the share of planned focus you did.</li>
+            <li><b>Efficiency (35%)</b>: how much of your desk time was focus, compared with what your focus/break plan allows. Long pauses lower it.</li>
+            <li><b>Intensity (20%)</b>: the difficulty of the task(s) you worked on (difficulty ÷ 5). Sessions without a task count as 2.5.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+    <div class="tiles" id="tiles"></div>
+    <p class="a-line" id="summaryLine"></p>
+
+    <div class="card pad a-section" style="margin-top:16px">
+      <h3>Today's sessions</h3>
+      <ul class="sessions" id="sessionList"></ul>
+    </div>
+
+    <div class="card pad a-section">
+      <h3 id="weekTitle">This week vs last week</h3>
+      <div class="week-grid" id="weekGrid"></div>
+    </div>
+
+    <div class="filter-row">
+      <h2>History</h2>
+      <div class="seg" role="group" aria-label="Date range">
+        <button type="button" data-range="7" aria-pressed="false">7 days</button>
+        <button type="button" data-range="14" aria-pressed="true">14 days</button>
+        <button type="button" data-range="30" aria-pressed="false">30 days</button>
+      </div>
+    </div>
+
+    <div class="card pad a-section">
+      <h3>Time at your desk each day</h3>
+      <div class="legend">
+        <span><i style="background:var(--s1)"></i>Focus</span>
+        <span><i style="background:var(--s2)"></i>Break</span>
+        <span><i style="background:var(--s3)"></i>Paused &amp; other</span>
+      </div>
+      <div class="chart" id="chart"><div class="tip" id="tip" role="tooltip"></div></div>
+      <p class="note" id="chartNote"></p>
+    </div>
+
+    <div class="card pad a-section">
+      <h3>Daily breakdown</h3>
+      <div class="table-wrap">
+        <table class="hist">
+          <thead><tr>
+            <th>Day</th><th>Score</th><th>Desk time</th><th>Focus</th><th>Break</th><th class="opt">Paused &amp; other</th><th>Blocks</th><th class="opt">Focus %</th>
+          </tr></thead>
+          <tbody id="histBody"></tbody>
+        </table>
+      </div>
+      <p class="empty-msg" id="histEmpty" hidden>No study time in this range yet.</p>
+    </div>
+
+    <div class="a-foot">
+      <span>Time is recorded while this page is connected to the timer. Everything is saved in this browser only, so use Back up / Restore to move it to another browser or the installed app.</span>
+      <button id="exportBtn" type="button">Export CSV</button>
+      <button id="backupBtn" type="button">Back up</button>
+      <button id="restoreBtn" type="button">Restore</button>
+      <input type="file" id="restoreFile" accept="application/json,.json" hidden>
+      <button id="clearBtn" type="button" class="danger">Clear study history</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="app.js"></script>
+<script src="score.js"></script>
+<script src="analytics.js"></script>
+<script src="tasks.js"></script>
+<script src="calendar.js"></script>
+<script src="main.js"></script>
+</body>
+</html>

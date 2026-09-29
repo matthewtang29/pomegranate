@@ -1,0 +1,81 @@
+// ================================================================= START-UP
+// Tabs, installable-app setup, and first render. Loaded last.
+
+const VIEWS = { timer: 'timerView', tasks: 'tasksView', calendar: 'calView', analytics: 'analyticsView' };
+
+function showTab(name) {
+  if (!VIEWS[name]) name = 'timer';
+  for (const [key, id] of Object.entries(VIEWS)) $(id).hidden = key !== name;
+  document.querySelectorAll('[data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === name)));
+  editingId = null;
+  if (name === 'analytics') renderAnalytics();
+  if (name === 'tasks') { renderProjectLists(); renderTasks(); }
+  if (name === 'calendar') renderCalendar();
+  if (name === 'timer') renderTimerTask();
+  history.replaceState(null, '', name === 'timer' ? location.pathname + location.search : '#' + name);
+}
+document.querySelectorAll('[data-tab]').forEach(b => b.addEventListener('click', () => showTab(b.dataset.tab)));
+
+// Keyboard: ←/→ moves between tabs when a tab has focus
+$('tabTimer').parentElement.addEventListener('keydown', e => {
+  if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+  const tabs = [...document.querySelectorAll('[data-tab]')];
+  const i = tabs.indexOf(document.activeElement);
+  if (i < 0) return;
+  const next = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+  next.focus();
+  showTab(next.dataset.tab);
+});
+
+// Re-render at midnight-ish so "Today" stays correct if the app stays open
+let lastDay = dayKey(Date.now());
+setInterval(() => {
+  const k = dayKey(Date.now());
+  if (k !== lastDay) {
+    lastDay = k;
+    const open = Object.entries(VIEWS).find(([, id]) => !$(id).hidden);
+    showTab(open ? open[0] : 'timer');
+  }
+}, 60000);
+
+// ---------------------------------------------------------------- installable app (PWA)
+const isInstalledApp = window.matchMedia('(display-mode: standalone)').matches ||
+                       window.matchMedia('(display-mode: window-controls-overlay)').matches;
+
+if ('serviceWorker' in navigator && location.protocol.startsWith('http')) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+
+let installPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  installPrompt = e;
+  $('installBtn').hidden = false;
+});
+$('installBtn').addEventListener('click', async () => {
+  if (!installPrompt) return;
+  installPrompt.prompt();
+  await installPrompt.userChoice;
+  installPrompt = null;
+  $('installBtn').hidden = true;
+});
+window.addEventListener('appinstalled', () => { $('installBtn').hidden = true; toast('Installed! Open Pomodoro from your Start menu or taskbar.'); });
+
+// ---------------------------------------------------------------- first render
+if (!('serial' in navigator)) {
+  $('unsupported').hidden = false;
+  $('connectBtn').disabled = true;
+}
+loadSettings();
+updateTotalHint();
+qaDefaults();
+renderProjectLists();
+render();
+showTab((location.hash || '').slice(1) || 'timer');
+
+// The installed app reconnects to the timer it used last time, without the port picker
+if (isInstalledApp && 'serial' in navigator) {
+  navigator.serial.getPorts().then(ports => {
+    if (ports.length === 1 && !port) connect(ports[0]);
+  }).catch(() => {});
+}
