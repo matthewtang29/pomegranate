@@ -85,6 +85,7 @@ qaDefaults();
 renderProjectLists();
 render();
 LocalTimer.start();   // drives the app until a physical timer is connected
+Sync.start();         // reconnects cloud sync if you signed in before
 showTab((location.hash || '').slice(1) || 'timer');
 
 // The installed app reconnects to the timer it used last time, without the port picker

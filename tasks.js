@@ -19,6 +19,7 @@ function loadTasks() {
   return { v: 1, items: [] };
 }
 function saveTasks() {
+  if (typeof Sync !== 'undefined') Sync.stamp('tasks');
   try { localStorage.setItem(TASKS_KEY, JSON.stringify(tasks)); } catch (e) {}
 }
 function restoreTasks(data) {

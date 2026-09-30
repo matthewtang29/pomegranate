@@ -31,6 +31,7 @@ function saveStore(force) {
   const now = Date.now();
   if (!force && now - lastSave < 10000) return;
   lastSave = now;
+  if (typeof Sync !== 'undefined') Sync.stamp('days');
   try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {}
 }
 window.addEventListener('pagehide', () => saveStore(true));
@@ -44,7 +45,12 @@ function keyToDate(k) { const [y, m, d] = k.split('-').map(Number); return new D
 function shiftKey(k, days) { const d = keyToDate(k); d.setDate(d.getDate() + days); return dayKey(d); }
 function emptyDay() { return { focus: 0, brk: 0, other: 0, blocks: 0, sessions: [] }; }
 function getDay(k) { return store.days[k] || (store.days[k] = emptyDay()); }
-function peekDay(k) { return store.days[k] || emptyDay(); }
+// Read-only view of a day: this device's time plus other synced devices'
+function peekDay(k) {
+  const own = store.days[k];
+  const merged = typeof Sync !== 'undefined' ? Sync.mergedDay(k, own) : own;
+  return merged || emptyDay();
+}
 function deskOf(d) { return d.focus + d.brk + d.other; }
 
 // at: when the state actually changed (the built-in timer passes exact times so
@@ -514,7 +520,7 @@ function download(name, text, type) {
 
 $('exportBtn').addEventListener('click', () => {
   const rows = [['date', 'score', 'day_rating', 'desk_minutes', 'focus_minutes', 'break_minutes', 'paused_other_minutes', 'focus_blocks', 'sessions', 'tasks_done']];
-  const keys = new Set(Object.keys(store.days));
+  const keys = typeof Sync !== 'undefined' ? Sync.allDayKeys() : new Set(Object.keys(store.days));
   (typeof tasks !== 'undefined' ? tasks.items : []).forEach(t => { if (t.done) keys.add(dayKey(t.done)); });
   if (typeof journal !== 'undefined') Object.keys(journal.entries).forEach(k => keys.add(k));
   [...keys].sort().forEach(k => {
@@ -569,6 +575,7 @@ $('clearBtn').addEventListener('click', () => {
   store = { v: 1, days: {} };
   liveSession = null;
   saveStore(true);
+  if (typeof Sync !== 'undefined') Sync.clearDays();   // also from other synced devices
   renderAnalytics();
   toast('Study history cleared (tasks kept)');
 });

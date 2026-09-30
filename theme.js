@@ -81,7 +81,12 @@ function setThemeMenu(open) {
     menu.style.top = '';
   }
 }
-$('themeBtn').addEventListener('click', e => { e.stopPropagation(); setThemeMenu($('themeMenu').hidden); });
+$('themeBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const opening = $('themeMenu').hidden;
+  setThemeMenu(opening);
+  if (opening && typeof Sync !== 'undefined' && !Sync.signedIn) Sync.prefetch();   // get sign-in ready
+});
 document.addEventListener('click', e => { if (!$('themeMenu').hidden && !e.target.closest('.theme-wrap')) setThemeMenu(false); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('themeMenu').hidden) { setThemeMenu(false); $('themeBtn').focus(); } });
 

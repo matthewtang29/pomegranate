@@ -19,6 +19,7 @@ function loadJournal() {
   return { v: 1, entries: {} };
 }
 function saveJournal() {
+  if (typeof Sync !== 'undefined') Sync.stamp('journal');
   try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(journal)); } catch (e) {}
 }
 function restoreJournal(data) {

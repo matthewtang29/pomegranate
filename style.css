@@ -600,3 +600,17 @@ code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--fi
 .custom-color input { width: 32px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
 .tabs button[aria-selected="true"] { box-shadow: 0 1px 2px rgba(0,0,0,.08), inset 0 -2px 0 var(--accent); }
 .theme-menu.pinned { position: fixed; left: 16px; right: 16px; width: auto; }
+
+/* ======================================================= sync */
+.icon-btn { position: relative; }
+.sync-dot { position: absolute; right: 5px; top: 5px; width: 8px; height: 8px; border-radius: 50%; border: 2px solid var(--card); background: var(--idle); }
+.sync-dot.synced { background: var(--rest); }
+.sync-dot.syncing { background: var(--paused); }
+.sync-dot.error { background: var(--down); }
+.sync-panel { font-size: 13px; }
+.sync-note { color: var(--muted); margin: 6px 0; font-size: 13px; line-height: 1.45; }
+.sync-err { color: var(--down); }
+.sync-who { margin-top: 4px; overflow-wrap: anywhere; }
+.sync-row { display: flex; gap: 8px; margin-top: 8px; }
+.sync-signin { margin-top: 4px; }
+.tm-sep { border: 0; border-top: 1px solid var(--line); margin: 16px 0 12px; }

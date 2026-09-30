@@ -21,6 +21,7 @@ A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++,
 - **Analytics tab:** daily productivity score, desk / focus / break time compared with yesterday and last week, and up to 30 days of history
 - **Installable app** that works offline and reconnects to the timer automatically
 - **Themes:** system / light / dark, plus 8 accent colors or any custom color
+- **Cloud sync:** sign in with Google to sync tasks, journal, study history and settings between computer and phone (Firebase)
 
 ## Using the app
 
@@ -28,7 +29,7 @@ Open the GitHub Pages link in Chrome or Edge, plug in the timer, and press **Con
 
 **Install it as an app:** on the GitHub Pages site, click the install icon at the right end of the address bar (or **⬇ Install as an app** under the timer). It then opens in its own window with a Start menu / taskbar icon, works offline, and reconnects to the timer on launch.
 
-All data (tasks, journal, study history, settings) is stored in the browser. Use **Back up** / **Restore** on the Analytics tab to move it between browsers or into the installed app.
+All data (tasks, journal, study history, settings) is stored in the browser first, so the app works offline. Sign in from ⚙ Settings to sync it across devices, or use **Back up** / **Restore** on the Analytics tab to move it manually.
 
 ## Productivity score
 
@@ -47,6 +48,21 @@ All data (tasks, journal, study history, settings) is stored in the browser. Use
 | Session quality | 30% | Focus-weighted average of that day's session scores |
 
 Parts with nothing to measure are left out and the rest are rescaled.
+
+## Cloud sync
+Sync uses Firebase Authentication (Google sign-in) and Cloud Firestore on the free Spark plan. Tasks and journal entries are stored one per document and the newest change wins; deletions sync as markers. Study history is stored per device and added together for display, so two devices studying on the same day never overwrite each other.
+
+Firestore security rules (only the signed-in user can read or write their own data):
+```
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
+```
 
 ## How it works
 
@@ -75,6 +91,7 @@ score.js                        Session and daily productivity scores
 tasks.js                        Tasks tab and quick-add parser
 calendar.js                     Calendar tab
 journal.js                      Journal tab (day ratings)
+sync.js                         Google sign-in and cloud sync
 theme.js                        Theme settings
 main.js                         Tabs, install-as-app, start-up
 manifest.webmanifest, sw.js     Installable app (PWA) setup

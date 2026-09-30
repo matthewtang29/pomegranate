@@ -14,6 +14,7 @@ try {
 
 function setFocusGoal(min) {
   focusGoalMin = min;
+  if (typeof Sync !== 'undefined') Sync.stampMeta();
   try { localStorage.setItem('pomodoro-goal', String(min)); } catch (e) {}
 }
 
