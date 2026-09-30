@@ -84,6 +84,7 @@ updateTotalHint();
 qaDefaults();
 renderProjectLists();
 render();
+LocalTimer.start();   // drives the app until a physical timer is connected
 showTab((location.hash || '').slice(1) || 'timer');
 
 // The installed app reconnects to the timer it used last time, without the port picker

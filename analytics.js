@@ -47,10 +47,16 @@ function getDay(k) { return store.days[k] || (store.days[k] = emptyDay()); }
 function peekDay(k) { return store.days[k] || emptyDay(); }
 function deskOf(d) { return d.focus + d.brk + d.other; }
 
-function trackState(prev, next) {
-  const now = Date.now();
+// at: when the state actually changed (the built-in timer passes exact times so
+// a throttled background tab still records the right amount of time)
+function trackState(prev, next, at) {
+  const now = at || Date.now();
+  const local = next.src === 'LOCAL';
+  // gaps longer than this are ignored (unplugged, laptop asleep). The built-in timer
+  // can be throttled to one update a minute in a background tab, so it gets more room.
+  const maxGap = local ? 70000 : MAX_GAP_MS;
   if (tick && CATEGORY[tick.state]) {
-    const secs = Math.min(now - tick.t, MAX_GAP_MS) / 1000;
+    const secs = Math.max(0, Math.min(now - tick.t, maxGap)) / 1000;
     const cat = CATEGORY[tick.state];
     getDay(dayKey(now))[cat] += secs;
     if (liveSession) {
@@ -65,13 +71,21 @@ function trackState(prev, next) {
   const isIn = next.state in CATEGORY;
   if (!wasIn && isIn) {
     sessionExited = false;
-    liveSession = {
-      start: now, end: null, mode: next.mode,
-      focusMin: next.focus, breakMin: next.break, cycles: next.cycles,
-      focus: 0, desk: 0, blocks: 0, outcome: 'running',
-      work: {}, diffs: {}, tasksDone: [],   // focus seconds per task, task difficulty, tasks checked off
-    };
-    getDay(dayKey(now)).sessions.push(liveSession);
+    // a built-in timer session that survived a page reload continues its old record
+    const resumed = local && next.sstart ? findSession(next.sstart) : null;
+    if (resumed) {
+      liveSession = resumed;
+      liveSession.outcome = 'running';
+      liveSession.end = null;
+    } else {
+      liveSession = {
+        start: local && next.sstart ? next.sstart : now, end: null, mode: next.mode,
+        focusMin: next.focus, breakMin: next.break, cycles: next.cycles,
+        focus: 0, desk: 0, blocks: 0, outcome: 'running', source: local ? 'built-in' : 'timer',
+        work: {}, diffs: {}, tasksDone: [],   // focus seconds per task, task difficulty, tasks checked off
+      };
+      getDay(dayKey(liveSession.start)).sessions.push(liveSession);
+    }
     saveStore(true);
   } else if (wasIn && !isIn) {
     finishSession(sessionExited ? 'exited' : 'completed');
@@ -79,6 +93,11 @@ function trackState(prev, next) {
   saveStore(false);
 
   if (!$('analyticsView').hidden && now - lastStatsRender > 3000) renderAnalytics();
+}
+
+function findSession(start) {
+  const day = store.days[dayKey(start)];
+  return day ? (day.sessions || []).find(x => x.start === start) || null : null;
 }
 
 function trackEvent(name) {
@@ -243,7 +262,7 @@ function renderSessions(T, list, emptyText) {
       : `${x.focusMin}/${x.breakMin} × ${x.cycles}`;
     const end = x.end ? ` – ${fmtClockTime(x.end)}` : '';
     const [label, cls] = OUT[x.outcome] || [x.outcome, ''];
-    const planEl = el('span', 's-plan', `${plan} · ${fmtSecs(x.desk)} at desk${end}`);
+    const planEl = el('span', 's-plan', `${plan}${x.source === 'built-in' ? ' · built-in timer' : ''} · ${fmtSecs(x.desk)} at desk${end}`);
     const names = Object.keys(x.work || {})
       .sort((a, b) => x.work[b] - x.work[a])
       .map(id => (typeof taskById === 'function' && taskById(id)) ? taskById(id).title : null)

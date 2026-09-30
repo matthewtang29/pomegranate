@@ -64,6 +64,7 @@ Object.values(inputs).forEach(el => el.addEventListener('change', saveSettings))
 // ---------------------------------------------------------------- serial
 // knownPort: a port this site was allowed to use before (the installed app reconnects to it on launch)
 async function connect(knownPort) {
+  if (LocalTimer.busy()) { toast('Finish or exit the built-in timer session first'); return; }
   try {
     port = knownPort || await navigator.serial.requestPort();
     await port.open({ baudRate: BAUD });
@@ -99,6 +100,7 @@ async function disconnect() {
   status = null;
   log('— disconnected');
   render();
+  LocalTimer.announce();   // the built-in timer takes over again
 }
 
 async function readLoop() {
@@ -128,6 +130,11 @@ async function readLoop() {
 }
 
 function send(cmd) {
+  if (!port) {   // no physical timer: the built-in timer handles it
+    log('> ' + cmd + '  (built-in)');
+    LocalTimer.command(cmd);
+    return Promise.resolve();
+  }
   sendChain = sendChain.then(async () => {
     if (!port || !port.writable) return;
     const writer = port.writable.getWriter();
@@ -148,7 +155,8 @@ if ('serial' in navigator) {
 }
 
 // ---------------------------------------------------------------- messages from the timer
-function handleLine(line) {
+// at: optional time the line refers to (used by the built-in timer)
+function handleLine(line, at) {
   if (line.startsWith('STATE ')) {
     if ($('showStates').checked) log('< ' + line);
     const s = {};
@@ -156,7 +164,7 @@ function handleLine(line) {
       const [k, v] = kv.split('=');
       s[k] = isNaN(v) ? v : Number(v);
     });
-    trackState(status ? status.state : null, s);
+    trackState(status ? status.state : null, s, at);
     status = s;
     render();
     return;
@@ -177,9 +185,23 @@ function errorText(code) {
 
 function onEvent(name) {
   trackEvent(name);
+  const msg = { FOCUS_DONE: ['Focus block done', 'Time for a break.'],
+                REST_DONE: ['Break over', 'Back to focus.'],
+                SESSION_ENDED: ['Session complete', 'Nice work!'] }[name];
   if (name === 'FOCUS_DONE') chime([784, 659, 523]);
   else if (name === 'REST_DONE') chime([523, 659, 784]);
   else if (name === 'SESSION_ENDED') chime([523, 659, 784, 1047]);
+  // With the built-in timer there's no buzzer, so also send a system notification
+  // when the app is in the background
+  if (msg && !port && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+    try { new Notification(msg[0], { body: msg[1], icon: 'icons/icon-192.png', tag: 'pomodoro' }); } catch (e) {}
+  }
+}
+
+function askNotificationPermission() {
+  if (!port && 'Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(() => {});
+  }
 }
 
 // ---------------------------------------------------------------- UI
@@ -201,16 +223,20 @@ const IDLE = ['MENU', 'SUMMARY', 'ENDED', 'EXITED'];
 
 function render() {
   const connected = !!port;
-  const ready = connected && !!status;
+  const ready = !!status;             // the physical timer or the built-in one has reported in
+  const local = !connected;
   const st = ready ? status.state : null;
   const s = settings();
 
   // header
   $('connectBtn').textContent = connected ? 'Disconnect' : 'Connect';
   $('connectBtn').classList.toggle('primary', !connected);
+  $('connectBtn').title = connected ? 'Disconnect the timer' : 'Connect your Pomodoro timer over USB';
   const pill = $('pill');
-  pill.className = 'pill' + (ready ? ' on' : connected ? ' wait' : '');
-  pill.textContent = ready ? 'Connected' : connected ? 'Waiting for timer…' : 'Not connected';
+  pill.className = 'pill' + (connected ? (ready ? ' on' : ' wait') : ' local');
+  pill.textContent = connected ? (ready ? 'Timer connected' : 'Waiting for timer…') : 'Built-in timer';
+  pill.title = connected ? '' : 'No timer connected: sessions run in the app. Connect to use your Pomodoro timer.';
+  $('soundRow').hidden = local;
 
   // mute toggle (reflects the timer's actual setting)
   const muted = ready && status.muted === 1;
@@ -232,7 +258,7 @@ function render() {
   // dial
   const phase = ready ? (PHASES[st] || { label: st, tone: 'idle' }) : null;
   $('card').dataset.phase = phase ? phase.tone : 'idle';
-  $('phase').textContent = !connected ? 'Not connected' : !ready ? 'Connecting' : phase.label;
+  $('phase').textContent = !ready ? 'Connecting' : phase.label;
 
   let secs, total;
   if (ready && ['GETREADY', 'FOCUS', 'REST', 'PAUSED_FOCUS', 'PAUSED_REST'].includes(st)) {
@@ -256,9 +282,8 @@ function render() {
   requestAnimationFrame(() => { ring.style.transition = ''; });
 
   let sub = '';
-  if (!connected) sub = 'Plug in, then press Connect';
-  else if (!ready) sub = 'Restarting the timer…';
-  else if (IDLE.includes(st)) sub = st === 'MENU' ? 'Set up a session below' : 'Start another session below';
+  if (!ready) sub = 'Restarting the timer…';
+  else if (IDLE.includes(st)) sub = local ? 'Built-in timer · or Connect yours' : st === 'MENU' ? 'Set up a session below' : 'Start another session below';
   else if (st === 'FOCUS_DONE') sub = 'Break starts in a moment';
   else sub = status.cycles > 0 ? `Cycle ${status.cycle} of ${status.cycles}` : `Cycle ${status.cycle} · auto mode`;
   $('sub').textContent = sub;
@@ -315,7 +340,9 @@ function ensureAudio() {
   } catch (e) {}
 }
 function chime(notes) {
-  if (!$('soundChk').checked || !audioCtx) return;
+  if (!audioCtx) return;
+  // built-in timer: follows the Mute button; physical timer: follows the checkbox
+  if (port ? !$('soundChk').checked : (status && status.muted === 1)) return;
   const t0 = audioCtx.currentTime;
   notes.forEach((hz, i) => {
     const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
@@ -335,9 +362,11 @@ function chime(notes) {
 $('connectBtn').addEventListener('click', () => port ? disconnect() : connect());
 $('startBtn').addEventListener('click', () => {
   const s = settings();
+  ensureAudio();
+  askNotificationPermission();
   send(`START ${s.focus} ${s.brk} ${s.cycles}`);
 });
-$('autoBtn').addEventListener('click', () => send('AUTO'));
+$('autoBtn').addEventListener('click', () => { ensureAudio(); askNotificationPermission(); send('AUTO'); });
 $('muteBtn').addEventListener('click', () => {
   if (status) send(status.muted === 1 ? 'UNMUTE' : 'MUTE');
 });

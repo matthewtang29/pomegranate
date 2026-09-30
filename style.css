@@ -1,3 +1,9 @@
+/* Light/dark: follows the system unless the user picks one in Theme settings
+   (sets data-theme="light"/"dark" on <html>). Accent color comes from theme.js. */
+:root { color-scheme: light dark; }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
 :root {
   --bg: #f6f4f1;
   --card: #ffffff;
@@ -22,7 +28,7 @@
   --down: #c02f2f;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --bg: #141312;
     --card: #1e1c1b;
     --text: #f2efec;
@@ -44,6 +50,27 @@
     --down: #e66767;
   }
 }
+:root[data-theme="dark"] {
+  --bg: #141312;
+  --card: #1e1c1b;
+  --text: #f2efec;
+  --muted: #a39d96;
+  --line: #34302d;
+  --field: #282523;
+  --focus: #ff6166;
+  --rest: #4cc38a;
+  --paused: #f1b341;
+  --idle: #57514c;
+  --accent: #ec4b51;
+  --shadow: none;
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --grid: #2c2a28;
+  --axis: #45413d;
+  --up: #0ca30c;
+  --down: #e66767;
+}
 * { box-sizing: border-box; }
 body {
   margin: 0;
@@ -64,6 +91,7 @@ header h1 span { color: var(--accent); }
 .pill::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--idle); }
 .pill.on::before { background: var(--rest); }
 .pill.wait::before { background: var(--paused); }
+.pill.local::before { background: var(--accent); }
 
 button {
   font: inherit; font-weight: 600; cursor: pointer;
@@ -283,12 +311,18 @@ table.hist { width: 100%; border-collapse: collapse; font-size: 13px; }
   --p1: #d1453b; --p2: #eb8909; --p3: #246fe0; --p4: #9a948d;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --q1: #1b2d44; --q2: #184f95; --q3: #256abf; --q4: #3987e5; --q5: #86b6ef;
     --q1-ink: #c3c2b7; --q2-ink: #ffffff; --q3-ink: #ffffff; --q4-ink: #ffffff; --q5-ink: #0b0b0b;
     --meter-track: #1f2a38;
     --p1: #ff7066; --p2: #ff9a14; --p3: #5297ff; --p4: #8a847d;
   }
+}
+:root[data-theme="dark"] {
+  --q1: #1b2d44; --q2: #184f95; --q3: #256abf; --q4: #3987e5; --q5: #86b6ef;
+  --q1-ink: #c3c2b7; --q2-ink: #ffffff; --q3-ink: #ffffff; --q4-ink: #ffffff; --q5-ink: #0b0b0b;
+  --meter-track: #1f2a38;
+  --p1: #ff7066; --p2: #ff9a14; --p3: #5297ff; --p4: #8a847d;
 }
 button.small { padding: 6px 12px; font-size: 13px; border-radius: 8px; }
 select, input[type="date"], .qa-opts input {
@@ -458,12 +492,18 @@ code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--fi
   --m-green: #2e9d4f;  --m-green-ink: #ffffff;
 }
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --m-red: #e5534b;    --m-red-ink: #ffffff;
     --m-orange: #f0883e; --m-orange-ink: #1a1a1a;
     --m-yellow: #e3b341; --m-yellow-ink: #1a1a1a;
     --m-green: #3fb950;  --m-green-ink: #0b0b0b;
   }
+}
+:root[data-theme="dark"] {
+  --m-red: #e5534b;    --m-red-ink: #ffffff;
+  --m-orange: #f0883e; --m-orange-ink: #1a1a1a;
+  --m-yellow: #e3b341; --m-yellow-ink: #1a1a1a;
+  --m-green: #3fb950;  --m-green-ink: #0b0b0b;
 }
 .m-red    { --m: var(--m-red);    --m-ink: var(--m-red-ink); }
 .m-orange { --m: var(--m-orange); --m-ink: var(--m-orange-ink); }
@@ -538,3 +578,25 @@ code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--fi
   .c-mood small { display: none; }
   .tabs button { font-size: 13px; padding: 8px 2px; }
 }
+
+/* ======================================================= theme menu */
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.theme-wrap { position: relative; }
+.theme-menu {
+  position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: 272px; padding: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,.18);
+}
+.theme-menu h3 { font-size: 15px; margin: 0 0 4px; }
+.tm-label { font-size: 12px; font-weight: 600; color: var(--muted); margin: 12px 0 6px; }
+.theme-menu .seg { display: flex; }
+.theme-menu .seg button { flex: 1; }
+.swatches { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; }
+.swatches button {
+  aspect-ratio: 1; width: 100%; padding: 0; border-radius: 50%; border: 2px solid var(--card);
+  box-shadow: 0 0 0 1px var(--line);
+}
+.swatches button[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--text); }
+.custom-color { display: flex; align-items: center; gap: 8px; margin: 10px 0 12px; font-size: 13px; cursor: pointer; }
+.custom-color input { width: 32px; height: 26px; padding: 0; border: 1px solid var(--line); border-radius: 6px; background: none; cursor: pointer; }
+.tabs button[aria-selected="true"] { box-shadow: 0 1px 2px rgba(0,0,0,.08), inset 0 -2px 0 var(--accent); }
+.theme-menu.pinned { position: fixed; left: 16px; right: 16px; width: auto; }

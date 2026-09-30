@@ -2,10 +2,10 @@
 // Network first, and every request double-checks with GitHub that the file hasn't
 // changed (instead of trusting the browser's 10-minute cache), so updates you push
 // show up the next time the app opens. The cached copy is only used when offline.
-const CACHE = 'pomodoro-v3';
+const CACHE = 'pomodoro-v4';
 const ASSETS = [
   './', 'index.html', 'style.css',
-  'app.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'main.js',
+  'app.js', 'localtimer.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'theme.js', 'main.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 
