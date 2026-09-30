@@ -614,3 +614,7 @@ code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--fi
 .sync-row { display: flex; gap: 8px; margin-top: 8px; }
 .sync-signin { margin-top: 4px; }
 .tm-sep { border: 0; border-top: 1px solid var(--line); margin: 16px 0 12px; }
+
+.tm-check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; cursor: pointer; }
+.tm-check input { width: 16px; height: 16px; accent-color: var(--accent); }
+.theme-menu { max-height: calc(100vh - 90px); overflow-y: auto; }

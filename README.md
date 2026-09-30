@@ -14,6 +14,7 @@ A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++,
 **Companion app (web / installable)**
 - **Timer tab:** set up and control sessions over USB, with a live countdown synced to the device
 - **Built-in timer:** no device plugged in? Sessions run in the app itself (also on phones), with the same tracking, scores, and notifications
+- **Timer alerts:** system notifications when a focus block, break, or session ends (with the physical or built-in timer), plus an option to keep the screen awake during sessions
 - **Tasks tab:** a Todoist-style task list with natural-language quick add (`Lab report fri p1 d4 #ECE140`), priorities, difficulty ratings (1–5), projects, and Today / Upcoming / All / Done views
 - **Link tasks to sessions:** pick what you're working on and focus time is credited to that task
 - **Calendar tab:** month view of tasks due, each day's productivity score, and your day rating (switch between showing both, productivity, or day rating)
@@ -86,6 +87,7 @@ firmware/Pomodoro_Timer_Code/   Arduino sketch (open in the Arduino IDE)
 index.html, style.css           App layout and styles
 app.js                          USB connection and timer controls
 localtimer.js                   Built-in timer (same protocol as the Arduino)
+notify.js                       Timer-finished notifications and keep-awake
 analytics.js                    Study time tracking and Analytics tab
 score.js                        Session and daily productivity scores
 tasks.js                        Tasks tab and quick-add parser

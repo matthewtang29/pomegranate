@@ -2,10 +2,10 @@
 // Network first, and every request double-checks with GitHub that the file hasn't
 // changed (instead of trusting the browser's 10-minute cache), so updates you push
 // show up the next time the app opens. The cached copy is only used when offline.
-const CACHE = 'pomodoro-v5';
+const CACHE = 'pomodoro-v6';
 const ASSETS = [
   './', 'index.html', 'style.css',
-  'app.js', 'localtimer.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'sync.js', 'theme.js', 'main.js',
+  'app.js', 'localtimer.js', 'notify.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'sync.js', 'theme.js', 'main.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
 ];
 
@@ -34,4 +34,13 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(req, { ignoreSearch: true })
         .then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
   );
+});
+
+// Clicking a "timer finished" notification brings the app back to the front
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    const open = list.find(c => c.url.startsWith(self.registration.scope));
+    return open ? open.focus() : self.clients.openWindow('./');
+  }));
 });

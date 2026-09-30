@@ -10,7 +10,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=2026.09.29d">
+<link rel="stylesheet" href="style.css?v=2026.09.30a">
 <script>
   // Apply the saved theme before the page draws, so there's no flash of the default colors
   (function () {
@@ -42,6 +42,11 @@
       <div class="theme-menu card" id="themeMenu" role="dialog" aria-label="Settings" hidden>
         <h3>Sync</h3>
         <div id="syncPanel" class="sync-panel"></div>
+        <hr class="tm-sep">
+        <h3>Alerts</h3>
+        <label class="tm-check"><input type="checkbox" id="notifyChk"> Notify me when a timer ends</label>
+        <p class="sync-note" id="notifyStatus"></p>
+        <label class="tm-check" id="wakeRow"><input type="checkbox" id="wakeChk"> Keep screen on during sessions</label>
         <hr class="tm-sep">
         <h3>Theme</h3>
         <div class="tm-label">Appearance</div>
@@ -383,15 +388,16 @@
 
 <div class="toast" id="toast" role="status"></div>
 
-<script src="app.js?v=2026.09.29d"></script>
-<script src="localtimer.js?v=2026.09.29d"></script>
-<script src="score.js?v=2026.09.29d"></script>
-<script src="analytics.js?v=2026.09.29d"></script>
-<script src="tasks.js?v=2026.09.29d"></script>
-<script src="calendar.js?v=2026.09.29d"></script>
-<script src="journal.js?v=2026.09.29d"></script>
-<script src="sync.js?v=2026.09.29d"></script>
-<script src="theme.js?v=2026.09.29d"></script>
-<script src="main.js?v=2026.09.29d"></script>
+<script src="app.js?v=2026.09.30a"></script>
+<script src="localtimer.js?v=2026.09.30a"></script>
+<script src="notify.js?v=2026.09.30a"></script>
+<script src="score.js?v=2026.09.30a"></script>
+<script src="analytics.js?v=2026.09.30a"></script>
+<script src="tasks.js?v=2026.09.30a"></script>
+<script src="calendar.js?v=2026.09.30a"></script>
+<script src="journal.js?v=2026.09.30a"></script>
+<script src="sync.js?v=2026.09.30a"></script>
+<script src="theme.js?v=2026.09.30a"></script>
+<script src="main.js?v=2026.09.30a"></script>
 </body>
 </html>

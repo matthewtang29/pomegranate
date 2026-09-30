@@ -185,24 +185,14 @@ function errorText(code) {
 
 function onEvent(name) {
   trackEvent(name);
-  const msg = { FOCUS_DONE: ['Focus block done', 'Time for a break.'],
-                REST_DONE: ['Break over', 'Back to focus.'],
-                SESSION_ENDED: ['Session complete', 'Nice work!'] }[name];
-  if (name === 'FOCUS_DONE') chime([784, 659, 523]);
+  const lastBlock = status && status.cycles > 0 && status.cycle >= status.cycles;
+  if (name === 'FOCUS_DONE' && !lastBlock) chime([784, 659, 523]);   // last block: the session chime plays instead
   else if (name === 'REST_DONE') chime([523, 659, 784]);
   else if (name === 'SESSION_ENDED') chime([523, 659, 784, 1047]);
-  // With the built-in timer there's no buzzer, so also send a system notification
-  // when the app is in the background
-  if (msg && !port && document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-    try { new Notification(msg[0], { body: msg[1], icon: 'icons/icon-192.png', tag: 'pomodoro' }); } catch (e) {}
-  }
+  Notify.event(name);   // system notification if the app is in the background, message if not
 }
 
-function askNotificationPermission() {
-  if (!port && 'Notification' in window && Notification.permission === 'default') {
-    Notification.requestPermission().catch(() => {});
-  }
-}
+function askNotificationPermission() { Notify.ask(); }
 
 // ---------------------------------------------------------------- UI
 const PHASES = {
@@ -296,6 +286,7 @@ function render() {
   const running = ready && !IDLE.includes(st) && st !== 'CONTINUE';
   document.title = running ? `${fmtClock(secs)} · ${phase.label} — Pomodoro` : 'Pomodoro';
   if (typeof renderTimerTask === 'function') renderTimerTask();
+  if (typeof Notify !== 'undefined') Notify.update(status);
 }
 
 function fmtClock(secs) {
