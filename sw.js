@@ -2,11 +2,12 @@
 // Network first, and every request double-checks with GitHub that the file hasn't
 // changed (instead of trusting the browser's 10-minute cache), so updates you push
 // show up the next time the app opens. The cached copy is only used when offline.
-const CACHE = 'pomodoro-v6';
+const CACHE = 'pomegranate-v7';
 const ASSETS = [
   './', 'index.html', 'style.css',
   'app.js', 'localtimer.js', 'notify.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'sync.js', 'theme.js', 'main.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
+  'icons/bots/bolt.svg', 'icons/bots/visor.svg', 'icons/bots/gear.svg', 'fonts/bungee.woff2', 'fonts/nunito.woff2',
 ];
 
 self.addEventListener('install', e => {

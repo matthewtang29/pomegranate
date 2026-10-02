@@ -557,7 +557,7 @@ $('restoreFile').addEventListener('change', async () => {
     renderAnalytics();
     toast('Backup restored');
   } catch (e) {
-    toast("That file isn't a Pomodoro backup");
+    toast("That file isn't a Pomegranate backup");
   }
 });
 

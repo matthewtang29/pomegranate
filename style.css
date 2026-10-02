@@ -5,19 +5,24 @@
 :root[data-theme="dark"] { color-scheme: dark; }
 
 :root {
-  --bg: #f6f4f1;
+  --bg: #f6f4ef;
   --card: #ffffff;
-  --text: #1d1b19;
-  --muted: #6f6a64;
-  --line: #e6e1db;
-  --field: #f3f0ec;
-  --focus: #d9383e;
-  --rest: #23875a;
-  --paused: #c98a0b;
-  --idle: #b9b2aa;
-  --accent: #d9383e;
+  --text: #1f2430;
+  --muted: #6b7080;
+  --line: #e3dfd5;
+  --field: #f1eee7;
+  --focus: #e23b3b;
+  --rest: #2bb3a6;
+  --paused: #f28c28;
+  --idle: #c9c4b8;
+  --accent: #e23b3b;
   --accent-text: #ffffff;
-  --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.06);
+  --shadow: none;
+  /* robot-lab look: chunky ink outlines, offset shadows, bright pops */
+  --ink: #1f2430;
+  --pop: #f5c842;
+  --teal: #2bb3a6;
+  --dot: rgba(31,36,48,.07);
   /* chart series (validated colorblind-safe set) + delta text */
   --s1: #2a78d6;
   --s2: #eb6834;
@@ -29,47 +34,55 @@
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #141312;
-    --card: #1e1c1b;
-    --text: #f2efec;
-    --muted: #a39d96;
-    --line: #34302d;
-    --field: #282523;
-    --focus: #ff6166;
-    --rest: #4cc38a;
-    --paused: #f1b341;
-    --idle: #57514c;
-    --accent: #ec4b51;
+    --bg: #181b23;
+    --card: #242a37;
+    --text: #f3f0e8;
+    --muted: #a3a8b6;
+    --line: #363d4d;
+    --field: #2d3443;
+    --focus: #ff5a5a;
+    --rest: #3ccbbc;
+    --paused: #f7a04a;
+    --idle: #4a5163;
+    --accent: #f04848;
     --shadow: none;
+    --ink: #0a0c11;
+    --pop: #f5c842;
+    --teal: #3ccbbc;
+    --dot: rgba(255,255,255,.05);
     --s1: #3987e5;
     --s2: #d95926;
     --s3: #199e70;
-    --grid: #2c2a28;
-    --axis: #45413d;
+    --grid: #2f3544;
+    --axis: #485064;
     --up: #0ca30c;
-    --down: #e66767;
+    --down: #ff7070;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #141312;
-  --card: #1e1c1b;
-  --text: #f2efec;
-  --muted: #a39d96;
-  --line: #34302d;
-  --field: #282523;
-  --focus: #ff6166;
-  --rest: #4cc38a;
-  --paused: #f1b341;
-  --idle: #57514c;
-  --accent: #ec4b51;
+  --bg: #181b23;
+  --card: #242a37;
+  --text: #f3f0e8;
+  --muted: #a3a8b6;
+  --line: #363d4d;
+  --field: #2d3443;
+  --focus: #ff5a5a;
+  --rest: #3ccbbc;
+  --paused: #f7a04a;
+  --idle: #4a5163;
+  --accent: #f04848;
   --shadow: none;
+  --ink: #0a0c11;
+  --pop: #f5c842;
+  --teal: #3ccbbc;
+  --dot: rgba(255,255,255,.05);
   --s1: #3987e5;
   --s2: #d95926;
   --s3: #199e70;
-  --grid: #2c2a28;
-  --axis: #45413d;
+  --grid: #2f3544;
+  --axis: #485064;
   --up: #0ca30c;
-  --down: #e66767;
+  --down: #ff7070;
 }
 * { box-sizing: border-box; }
 body {
@@ -618,3 +631,238 @@ code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--fi
 .tm-check { display: flex; align-items: center; gap: 8px; font-size: 13px; margin: 6px 0; cursor: pointer; }
 .tm-check input { width: 16px; height: 16px; accent-color: var(--accent); }
 .theme-menu { max-height: calc(100vh - 90px); overflow-y: auto; }
+
+/* =======================================================================
+   POMEGRANATE THEME
+   Matches matthewtang29's site: chunky Bungee display type, 2px ink
+   outlines with offset "sticker" shadows, pill buttons, a faint dot grid,
+   and little robot mascots perched on the boxes. Works in light and dark.
+   ======================================================================= */
+@font-face { font-family: "Bungee"; src: url(fonts/bungee.woff2) format("woff2"); font-weight: 400; font-display: swap; }
+@font-face { font-family: "Nunito"; src: url(fonts/nunito.woff2) format("woff2"); font-weight: 200 1000; font-display: swap; }
+
+body {
+  font-family: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
+  background-size: 22px 22px;
+  background-attachment: fixed;
+}
+.wrap { max-width: 700px; padding-top: 24px; }
+b, strong, h3, h4 { font-weight: 800; }
+.display, h2, .time, .score-value, .stats b, .tabs button, button.primary, .row > button {
+  font-family: "Bungee", "Nunito", system-ui, sans-serif; font-weight: 400; letter-spacing: .5px;
+}
+h2 { color: var(--text); }
+.a-head h2, .filter-row h2 { font-size: 18px; }
+.cal-head h2 { font-size: 20px; }
+
+/* ---------- header ---------- */
+header { margin-bottom: 14px; gap: 8px; }
+header #connectBtn { padding: 9px 16px; }
+header h1 {
+  display: flex; align-items: center; gap: 10px;
+  font-family: "Bungee", "Nunito", sans-serif; font-weight: 400; font-size: 23px; letter-spacing: .3px;
+  color: var(--accent);
+  text-shadow: 2px 2px 0 var(--ink), 4px 4px 0 var(--pop);
+}
+header h1 img { width: 40px; height: 40px; flex: none; transition: transform .25s cubic-bezier(.3,1.6,.5,1); }
+header h1:hover img { transform: rotate(-10deg) translateY(-2px); }
+.pill {
+  background: var(--card); border: 2px solid var(--line); border-radius: 999px;
+  padding: 4px 11px; font-size: 12px; font-weight: 800; white-space: nowrap;
+}
+.pill::before { width: 10px; height: 10px; }
+
+/* ---------- buttons ---------- */
+button { font-weight: 800; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--teal); outline-offset: 2px;
+}
+:is(button.primary, button.small, .icon-btn, .row > button, .presets button, .cmdrow button, .a-foot button, .cal-nav button, .qa-row button) {
+  border: 2px solid var(--ink); border-radius: 999px; box-shadow: 0 3px 0 var(--ink);
+  transition: transform .12s ease, box-shadow .12s ease, background-color .15s, color .15s, opacity .15s;
+}
+:is(button.primary, button.small, .icon-btn, .row > button, .presets button, .cmdrow button, .a-foot button, .cal-nav button, .qa-row button):hover:not(:disabled) {
+  border-color: var(--ink); filter: none; transform: translateY(-2px); box-shadow: 0 5px 0 var(--ink);
+}
+:is(button.primary, button.small, .icon-btn, .row > button, .presets button, .cmdrow button, .a-foot button, .cal-nav button, .qa-row button):active:not(:disabled) {
+  transform: translateY(2px); box-shadow: 0 1px 0 var(--ink);
+}
+button.primary { border-color: var(--ink); }
+.row > button { padding: 12px 16px; font-size: 15px; }
+button.small { padding: 6px 13px; box-shadow: 0 2px 0 var(--ink); }
+button.small.primary { font-size: 12px; }
+.qa-row button.primary { font-size: 14px; padding: 9px 20px; }
+.presets button { color: var(--text); font-weight: 800; border-color: var(--ink); box-shadow: 0 2px 0 var(--ink); }
+.presets button:nth-child(1):hover:not(:disabled) { background: var(--pop); color: #1f2430; }
+.presets button:nth-child(2):hover:not(:disabled) { background: var(--teal); color: #1f2430; }
+.presets button:nth-child(3):hover:not(:disabled) { background: #f28c28; color: #1f2430; }
+.icon-btn { padding: 8px 11px; }
+.icon-btn[aria-pressed="true"] { background: var(--paused); color: #1f2430; border-color: var(--ink); }
+.a-foot button.danger, .task-edit .danger, .j-actions .danger { color: var(--down); }
+.toast-action { box-shadow: none; }
+
+/* ---------- tabs: pill buttons with a robot on the open one ---------- */
+.tabs { background: transparent; padding: 30px 0 0; gap: 8px; margin-bottom: 34px; border-radius: 0; }
+.a-head, .cal-head { margin-bottom: 30px; }
+.tabs button {
+  position: relative; font-size: 12.5px; padding: 9px 4px;
+  background: var(--card); color: var(--text);
+  border: 2px solid var(--ink); border-radius: 999px; box-shadow: 0 3px 0 var(--ink);
+  transition: transform .15s ease, box-shadow .15s ease, background-color .15s, color .15s;
+}
+.tabs button:hover:not([aria-selected="true"]) { color: var(--text); transform: translateY(-2px); box-shadow: 0 5px 0 var(--ink); }
+.tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-text); box-shadow: 0 3px 0 var(--ink); }
+.tabs button::before {
+  content: ""; position: absolute; left: 50%; bottom: calc(100% - 4px);
+  width: 30px; height: 27px; margin-left: -15px;
+  background: no-repeat center / contain;
+  opacity: 0; transform: translateY(10px) scale(.6); pointer-events: none;
+  transition: opacity .2s ease, transform .25s cubic-bezier(.3,1.6,.5,1);
+}
+.tabs button:nth-child(3n+1)::before { background-image: url(icons/bots/bolt.svg); }
+.tabs button:nth-child(3n+2)::before { background-image: url(icons/bots/visor.svg); }
+.tabs button:nth-child(3n+3)::before { background-image: url(icons/bots/gear.svg); }
+.tabs button:hover::before, .tabs button[aria-selected="true"]::before { opacity: 1; transform: none; }
+
+/* ---------- robot mascots perched on boxes ---------- */
+.perch { position: relative; }
+.perch::before {
+  content: ""; position: absolute; bottom: calc(100% - 3px); right: 22px;
+  width: 44px; height: 40px; background: no-repeat center / contain; pointer-events: none;
+  transform-origin: bottom center; transition: transform .25s cubic-bezier(.3,1.6,.5,1);
+}
+.perch.left::before { right: auto; left: 22px; }
+.perch:hover::before { transform: translateY(-3px) rotate(-6deg); }
+.bot-bolt::before  { background-image: url(icons/bots/bolt.svg); }
+.bot-visor::before { background-image: url(icons/bots/visor.svg); }
+.bot-gear::before  { background-image: url(icons/bots/gear.svg); }
+/* the timer's robot reacts to the session: bobs while focusing, naps on breaks */
+#card[data-phase="focus"]::before  { background-image: url(icons/bots/bolt.svg); animation: bot-bob 1.4s ease-in-out infinite; }
+#card[data-phase="rest"]::before   { background-image: url(icons/bots/visor.svg); }
+#card[data-phase="paused"]::before { background-image: url(icons/bots/gear.svg); transform: rotate(-8deg); }
+@keyframes bot-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+
+/* ---------- boxes ---------- */
+.card, .tile {
+  background: var(--card); border: 2px solid var(--ink); box-shadow: 0 5px 0 var(--ink);
+}
+.card { border-radius: 20px; }
+.tile { border-radius: 16px; box-shadow: 0 4px 0 var(--ink); }
+.a-section { margin-bottom: 22px; }
+.quick-add { margin-bottom: 20px; }
+.banner { border: 2px solid var(--ink); border-left: 8px solid var(--paused); border-radius: 14px; box-shadow: 0 3px 0 var(--ink); font-weight: 600; }
+.theme-menu { border-radius: 18px; box-shadow: 0 5px 0 var(--ink), 0 16px 34px rgba(0,0,0,.2); }
+.theme-menu h3 { font-family: "Bungee", "Nunito", sans-serif; font-weight: 400; font-size: 14px; letter-spacing: .5px; color: var(--accent); }
+.tm-label { font-weight: 800; }
+.tm-sep { border-top: 2px dashed var(--line); }
+.task-edit { border: 2px solid var(--ink); border-radius: 14px; box-shadow: 0 3px 0 var(--ink); }
+.tip { border: 2px solid var(--ink); border-radius: 12px; box-shadow: 0 3px 0 var(--ink); }
+
+/* ---------- inputs ---------- */
+select, input[type="date"], .qa-opts input, .cmdrow input, .task-edit input.te-title {
+  border: 2px solid var(--line); border-radius: 10px; font-weight: 600;
+}
+select:hover, input[type="date"]:hover { border-color: var(--muted); }
+.qa-row input, .day-add input, #jText { border: 2px solid var(--line); background: var(--field); font-weight: 600; }
+.qa-row input:focus, .day-add input:focus, #jText:focus { border-color: var(--ink); outline: 3px solid var(--teal); outline-offset: 1px; }
+.qa-row input { border-radius: 999px; padding: 10px 16px; }
+pre#log { border: 2px solid var(--line); border-radius: 12px; }
+code, kbd { border: 2px solid var(--line); background: var(--field); font-weight: 600; }
+.tm-check input, #soundRow input, .extras input[type="checkbox"] { accent-color: var(--accent); }
+
+/* segmented controls */
+.seg { background: var(--card); border: 2px solid var(--ink); border-radius: 999px; padding: 3px; box-shadow: 0 3px 0 var(--ink); }
+.seg button { border-radius: 999px; font-weight: 800; color: var(--muted); }
+.seg button:hover:not([aria-pressed="true"]) { color: var(--text); }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-text); box-shadow: none; }
+
+/* ---------- timer ---------- */
+.dial { width: min(270px, 72vw); margin-bottom: 22px; }
+.dial circle { stroke-width: 12; }
+.dial .rim { stroke: var(--ink); stroke-width: 18; }
+.dial .track { stroke: var(--field); }
+.phase { font-family: "Bungee", "Nunito", sans-serif; font-weight: 400; font-size: 12px; letter-spacing: 1px; }
+.time { font-size: clamp(40px, 12vw, 54px); letter-spacing: 1px; text-shadow: 3px 3px 0 var(--pop); line-height: 1.15; }
+[data-phase="rest"] .time { text-shadow: 3px 3px 0 var(--teal); }
+[data-phase="paused"] .time { text-shadow: 3px 3px 0 var(--paused); }
+.sub { font-weight: 600; font-size: 13px; }
+.dial-text { padding: 0 34px; }
+.field label { font-weight: 800; }
+.stepper { background: var(--field); border: 2px solid var(--ink); border-radius: 14px; }
+.stepper button { font-weight: 900; color: var(--text); }
+.stepper button:hover:not(:disabled) { color: var(--accent); }
+.total { font-weight: 600; }
+.task-link label { font-weight: 800; }
+.stats { border-top: 2px dashed var(--line); }
+.stats b { font-size: 22px; color: var(--accent); }
+.stats span { font-weight: 700; }
+.extras { font-weight: 600; }
+summary { font-weight: 800; }
+.hint { border-top: 2px dashed var(--line); padding-top: 14px; }
+
+/* ---------- tasks ---------- */
+.task-group h4 { font-weight: 900; border-bottom: 2px dashed var(--line); }
+.task { border-bottom: 2px dashed var(--line); }
+.task.linked { background: color-mix(in srgb, var(--accent) 9%, transparent); border-radius: 12px; }
+.check { width: 22px; height: 22px; border-width: 2.5px; }
+.chip { font-weight: 700; border: 2px solid var(--line); }
+.chip.title { border-color: transparent; }
+.diff-pick button { border: 2px solid var(--line); border-radius: 8px; font-weight: 900; }
+.diff-pick button[aria-checked="true"] { background: var(--accent); color: var(--accent-text); border-color: var(--ink); }
+.t-actions button { border: 2px solid var(--line); border-radius: 999px; font-weight: 800; }
+.t-actions button:hover:not(:disabled) { border-color: var(--ink); }
+.t-actions .t-focus:hover:not(:disabled) { background: var(--accent); color: var(--accent-text); }
+
+/* ---------- calendar ---------- */
+.cal-card { padding: 12px; }
+.cal-dow { font-weight: 800; }
+.cal-cell { border: 2px solid var(--line); border-radius: 12px; }
+.cal-cell:hover { border-color: var(--muted); }
+.cal-cell.sel { border-color: var(--ink); box-shadow: 0 3px 0 var(--ink); }
+.cal-cell .c-date { font-weight: 900; }
+.cal-cell.today .c-date { box-shadow: 0 0 0 2px var(--ink); }
+.cal-legend { font-weight: 700; }
+.day-journal { border: 2px solid var(--line); border-radius: 12px; }
+.day-stats div b { font-weight: 900; }
+
+/* ---------- journal ---------- */
+.j-top h3 { font-family: "Bungee", "Nunito", sans-serif; font-weight: 400; letter-spacing: .5px; font-size: 18px; color: var(--accent); }
+.j-rating button { border: 2px solid var(--line); border-radius: 12px; font-weight: 900; }
+.j-rating button:hover { border-color: var(--m); }
+.j-rating button[aria-checked="true"] { border-color: var(--ink); box-shadow: 0 3px 0 var(--ink); }
+.j-day { border-radius: 10px; font-weight: 600; }
+.j-day b { font-weight: 900; }
+.j-day.empty { border: 2px dashed var(--line); }
+.j-day.sel { border-color: var(--ink); }
+.j-entry { border: 2px solid var(--line); border-left: 8px solid var(--m); border-radius: 12px; }
+.j-entry:hover { border-color: var(--muted); border-left-color: var(--m); }
+.j-entry.sel { border-color: var(--ink); border-left-color: var(--m); box-shadow: 0 3px 0 var(--ink); }
+
+/* ---------- analytics ---------- */
+.score-value { font-size: 48px; text-shadow: 3px 3px 0 var(--pop); }
+.score-value small { font-family: "Nunito", sans-serif; font-weight: 800; text-shadow: none; }
+.tile .t-value { font-weight: 900; }
+.week-grid .w-value { font-weight: 900; }
+.meter { height: 12px; border-radius: 999px; border: 2px solid var(--ink); }
+.meter i { border-radius: 999px; background: var(--teal); }
+.score-badge, .c-score { border-radius: 999px; }
+.badge { border-width: 2px; font-weight: 800; }
+.hist th { font-weight: 800; border-bottom: 2px solid var(--line); }
+.hist td { border-bottom: 2px dashed var(--line); }
+
+/* ---------- toast ---------- */
+.toast { font-weight: 700; border-radius: 14px; border: 2px solid var(--ink); box-shadow: 0 4px 0 var(--pop); }
+
+@media (max-width: 600px) {
+  header h1 { font-size: 21px; }
+  header h1 img { width: 34px; height: 34px; }
+  .tabs { gap: 4px; }
+  .tabs button { font-family: "Nunito", sans-serif; font-weight: 900; font-size: 11.5px; letter-spacing: 0; padding: 8px 1px; }
+  .row > button { font-size: 13px; padding: 12px 8px; }
+  .score-value { font-size: 42px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before { transition: none !important; animation: none !important; }
+}

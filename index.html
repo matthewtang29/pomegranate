@@ -4,13 +4,15 @@
 <meta charset="utf-8">
 <!-- App version: the ?v= on the files below changes with every release so browsers load the new files. -->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pomodoro</title>
-<meta name="description" content="Control Matthew Tang's Arduino Pomodoro timer over USB, plan tasks, and track study time.">
-<meta name="theme-color" content="#d9383e">
+<title>Pomegranate</title>
+<meta name="description" content="Pomegranate: control Matthew Tang's Arduino Pomodoro timer over USB, plan tasks, and track study time.">
+<meta name="theme-color" content="#e23b3b">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="stylesheet" href="style.css?v=2026.09.30a">
+<link rel="preload" href="fonts/bungee.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="style.css?v=2026.10.02a">
 <script>
   // Apply the saved theme before the page draws, so there's no flash of the default colors
   (function () {
@@ -25,7 +27,7 @@
 <body>
 <div class="wrap">
   <header>
-    <h1><span>●</span> Pomodoro</h1>
+    <h1><img src="icons/icon.svg" alt="" width="40" height="40">Pomegranate</h1>
     <span id="pill" class="pill">Not connected</span>
     <button id="muteBtn" class="icon-btn" aria-pressed="false" disabled title="Turn the timer's buzzer on or off">
       <svg class="on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>
@@ -58,7 +60,7 @@
         <div class="tm-label">Accent color</div>
         <div class="swatches" id="swatches" role="group" aria-label="Accent color"></div>
         <label class="custom-color">
-          <input type="color" id="customColor" value="#d9383e">
+          <input type="color" id="customColor" value="#e23b3b">
           <span>Custom color…</span>
         </label>
         <button type="button" class="small" id="themeReset">Reset to default</button>
@@ -79,9 +81,10 @@
   </div>
 
   <div id="timerView" role="tabpanel" aria-labelledby="tabTimer">
-  <main class="card" id="card" data-phase="idle">
+  <main class="card perch bot-bolt" id="card" data-phase="idle">
     <div class="dial">
       <svg viewBox="0 0 240 240" aria-hidden="true">
+        <circle class="rim" cx="120" cy="120" r="108"/>
         <circle class="track" cx="120" cy="120" r="108"/>
         <circle class="prog" id="ring" cx="120" cy="120" r="108"/>
       </svg>
@@ -185,7 +188,7 @@
 
   <!-- ============================== TASKS ============================== -->
   <div id="tasksView" role="tabpanel" aria-labelledby="tabTasks" hidden>
-    <form class="card pad quick-add" id="addForm" autocomplete="off">
+    <form class="card pad quick-add perch bot-visor" id="addForm" autocomplete="off">
       <div class="qa-row">
         <input id="qaInput" aria-label="New task" placeholder="Add a task… e.g. Circuits lab report fri p1 d4 #ECE140">
         <button class="primary" type="submit">Add</button>
@@ -237,7 +240,7 @@
         <button type="button" id="calNext" class="small" aria-label="Next month">›</button>
       </div>
     </div>
-    <div class="card cal-card">
+    <div class="card cal-card perch bot-gear">
       <div class="cal-grid" id="calGrid"></div>
       <div class="cal-legend" id="legendScore">
         <span>Productivity score</span>
@@ -260,7 +263,7 @@
 
   <!-- ============================== JOURNAL ============================== -->
   <div id="journalView" role="tabpanel" aria-labelledby="tabJournal" hidden>
-    <form class="card pad j-editor a-section" id="jForm" autocomplete="off">
+    <form class="card pad j-editor a-section perch bot-bolt" id="jForm" autocomplete="off">
       <div class="j-top">
         <h3 id="jTitle">How was today?</h3>
         <input type="date" id="jDate" aria-label="Entry date">
@@ -295,7 +298,7 @@
   <!-- ============================== ANALYTICS ============================== -->
   <div id="analyticsView" role="tabpanel" aria-labelledby="tabStats" hidden>
     <div class="a-head"><h2>Today</h2><span id="todayLabel"></span></div>
-    <div class="card pad score-card a-section">
+    <div class="card pad score-card a-section perch bot-gear">
       <div class="score-top">
         <div class="score-hero">
           <div class="score-label">Productivity score</div>
@@ -388,16 +391,16 @@
 
 <div class="toast" id="toast" role="status"></div>
 
-<script src="app.js?v=2026.09.30a"></script>
-<script src="localtimer.js?v=2026.09.30a"></script>
-<script src="notify.js?v=2026.09.30a"></script>
-<script src="score.js?v=2026.09.30a"></script>
-<script src="analytics.js?v=2026.09.30a"></script>
-<script src="tasks.js?v=2026.09.30a"></script>
-<script src="calendar.js?v=2026.09.30a"></script>
-<script src="journal.js?v=2026.09.30a"></script>
-<script src="sync.js?v=2026.09.30a"></script>
-<script src="theme.js?v=2026.09.30a"></script>
-<script src="main.js?v=2026.09.30a"></script>
+<script src="app.js?v=2026.10.02a"></script>
+<script src="localtimer.js?v=2026.10.02a"></script>
+<script src="notify.js?v=2026.10.02a"></script>
+<script src="score.js?v=2026.10.02a"></script>
+<script src="analytics.js?v=2026.10.02a"></script>
+<script src="tasks.js?v=2026.10.02a"></script>
+<script src="calendar.js?v=2026.10.02a"></script>
+<script src="journal.js?v=2026.10.02a"></script>
+<script src="sync.js?v=2026.10.02a"></script>
+<script src="theme.js?v=2026.10.02a"></script>
+<script src="main.js?v=2026.10.02a"></script>
 </body>
 </html>

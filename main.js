@@ -72,7 +72,7 @@ $('installBtn').addEventListener('click', async () => {
   installPrompt = null;
   $('installBtn').hidden = true;
 });
-window.addEventListener('appinstalled', () => { $('installBtn').hidden = true; toast('Installed! Open Pomodoro from your Start menu or taskbar.'); });
+window.addEventListener('appinstalled', () => { $('installBtn').hidden = true; toast('Installed! Open Pomegranate from your Start menu or taskbar.'); });
 
 // ---------------------------------------------------------------- first render
 if (!('serial' in navigator)) {

@@ -1,6 +1,6 @@
 # Custom Pomodoro Timer
 
-A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++, with a 16x2 LCD, four push buttons, and a buzzer. It can be controlled with its buttons or from a computer over USB through a companion web app that also plans tasks and tracks study habits. The timer is housed in a custom 3D-printed case designed in Autodesk Fusion, with a magnet-secured two-piece design for easy access to the electronics.
+A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++, with a 16x2 LCD, four push buttons, and a buzzer. It can be controlled with its buttons or from a computer over USB through **Pomegranate**, a companion web app that also plans tasks and tracks study habits. The timer is housed in a custom 3D-printed case designed in Autodesk Fusion, with a magnet-secured two-piece design for easy access to the electronics.
 
 ## Features
 
@@ -11,7 +11,7 @@ A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++,
 - **Mute button**, saved in EEPROM so it's remembered after a restart
 - Checkpoint and summary screens tracking completed sessions and total focus time
 
-**Companion app (web / installable)**
+**Pomegranate companion app (web / installable)**
 - **Timer tab:** set up and control sessions over USB, with a live countdown synced to the device
 - **Built-in timer:** no device plugged in? Sessions run in the app itself (also on phones), with the same tracking, scores, and notifications
 - **Timer alerts:** system notifications when a focus block, break, or session ends (with the physical or built-in timer), plus an option to keep the screen awake during sessions
@@ -21,7 +21,7 @@ A standalone Pomodoro study timer built on an Arduino Uno R3, programmed in C++,
 - **Journal tab:** write about your day and rate it out of 10 (1–3 red, 4–5 orange, 6–8 yellow, 9–10 green), with a 14-day overview; ratings color the calendar and are kept separate from the productivity score
 - **Analytics tab:** daily productivity score, desk / focus / break time compared with yesterday and last week, and up to 30 days of history
 - **Installable app** that works offline and reconnects to the timer automatically
-- **Themes:** system / light / dark, plus 8 accent colors or any custom color
+- **Themes:** a playful robot-lab look matching my website (chunky type, outlined cards, robot mascots), in system / light / dark, plus 8 accent colors or any custom color
 - **Cloud sync:** sign in with Google to sync tasks, journal, study history and settings between computer and phone (Firebase)
 
 ## Using the app
@@ -97,7 +97,8 @@ sync.js                         Google sign-in and cloud sync
 theme.js                        Theme settings
 main.js                         Tabs, install-as-app, start-up
 manifest.webmanifest, sw.js     Installable app (PWA) setup
-icons/                          App icons
+icons/                          App icons and robot mascots (icons/bots/)
+fonts/                          Bungee and Nunito (SIL Open Font License), stored locally so the app works offline
 ```
 
 ## Hardware

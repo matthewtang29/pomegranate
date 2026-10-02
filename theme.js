@@ -3,10 +3,10 @@
 // The <head> of index.html applies the saved theme before the page draws.
 
 const THEME_KEY = 'pomodoro-theme';
-const DEFAULT_ACCENT = '#d9383e';
+const DEFAULT_ACCENT = '#e23b3b';
 const ACCENTS = [
-  ['Tomato', '#d9383e'], ['Ocean', '#2a78d6'], ['Forest', '#2e9d4f'], ['Grape', '#7c4dff'],
-  ['Sunset', '#ef7d22'], ['Rose', '#e0457b'], ['Teal', '#0f9d9a'], ['Graphite', '#4b5563'],
+  ['Pomegranate', '#e23b3b'], ['Robot teal', '#2bb3a6'], ['Visor orange', '#f28c28'], ['Gear yellow', '#f5c842'],
+  ['Ocean', '#2f6fc4'], ['Grape', '#6a4fb0'], ['Forest', '#3e9b5a'], ['Graphite', '#4b5563'],
 ];
 let theme = { mode: 'system', accent: null };
 try { theme = { ...theme, ...JSON.parse(localStorage.getItem(THEME_KEY) || '{}') }; } catch (e) {}

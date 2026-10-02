@@ -284,7 +284,7 @@ function render() {
 
   // tab title
   const running = ready && !IDLE.includes(st) && st !== 'CONTINUE';
-  document.title = running ? `${fmtClock(secs)} · ${phase.label} — Pomodoro` : 'Pomodoro';
+  document.title = running ? `${fmtClock(secs)} · ${phase.label} — Pomegranate` : 'Pomegranate';
   if (typeof renderTimerTask === 'function') renderTimerTask();
   if (typeof Notify !== 'undefined') Notify.update(status);
 }
