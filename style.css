@@ -382,6 +382,16 @@ select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 code { font: 12px ui-monospace, Menlo, Consolas, monospace; background: var(--field); border-radius: 4px; padding: 1px 5px; }
 
 .task-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 0 0 8px; }
+.proj-tools { display: flex; align-items: center; gap: 8px; }
+.proj-manage { margin: 0 0 12px; }
+.proj-manage h4 { font-size: 14px; margin: 0 0 6px; }
+.proj-row { display: flex; align-items: center; gap: 8px; padding: 8px 2px; border-bottom: 2px dashed var(--line); }
+.proj-row:last-child { border-bottom: 0; }
+.proj-name { font-weight: 800; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.proj-count { font-size: 13px; color: var(--muted); }
+.proj-edit { display: flex; align-items: center; gap: 8px; flex: 1; }
+.proj-edit input { flex: 1; min-width: 0; font: inherit; font-size: 14px; color: var(--text); background: var(--card); border: 2px solid var(--line); border-radius: 10px; padding: 6px 8px; font-weight: 600; }
+@media (max-width: 600px) { .proj-count { display: none; } }
 .task-group { margin-top: 14px; }
 .task-group h4 {
   display: flex; align-items: baseline; gap: 8px; font-size: 14px; margin: 0 2px 4px;
@@ -703,7 +713,7 @@ button.small.primary { font-size: 12px; }
 .presets button:nth-child(3):hover:not(:disabled) { background: var(--paused); color: #1f2430; }
 .icon-btn { padding: 8px 11px; }
 .icon-btn[aria-pressed="true"] { background: var(--paused); color: #1f2430; border-color: var(--ink); }
-.a-foot button.danger, .task-edit .danger, .j-actions .danger { color: var(--down); }
+.a-foot button.danger, .task-edit .danger, .j-actions .danger, .proj-manage .danger { color: var(--down); }
 .toast-action { box-shadow: none; }
 
 /* ---------- tabs: pill buttons with a robot on the open one ---------- */

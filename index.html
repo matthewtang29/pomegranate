@@ -220,8 +220,12 @@
         <button type="button" data-view="all" aria-pressed="false">All</button>
         <button type="button" data-view="done" aria-pressed="false">Done</button>
       </div>
-      <select id="projFilter" aria-label="Project filter"></select>
+      <div class="proj-tools">
+        <select id="projFilter" aria-label="Project filter"></select>
+        <button class="small" type="button" id="projManageBtn" aria-expanded="false" aria-controls="projManage">Manage</button>
+      </div>
     </div>
+    <div class="card pad proj-manage" id="projManage" hidden></div>
     <div id="taskList"></div>
   </div>
 

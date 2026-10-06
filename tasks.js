@@ -464,7 +464,90 @@ function renderProjectLists() {
   ps.forEach(p => sel.append(new Option('# ' + p, p)));
   sel.value = ps.includes(cur) ? cur : '';
   projFilter = sel.value;
+  renderProjectManager();
 }
+
+// ---------------------------------------------------------------- manage projects
+// Projects only exist as labels on tasks, so renaming or deleting one rewrites
+// the label on every task that has it (tasks themselves are kept on delete).
+let projManageOpen = false;
+let projEditing = null;
+
+function relabelProject(ids, name) {
+  ids.forEach(id => { const t = taskById(id); if (t) t.project = name; });
+  saveTasks();
+  refreshTaskViews();
+}
+
+function renameProject(from, to) {
+  to = to.trim().replace(/^#/, '');
+  if (!to || to === from) return;
+  const ids = tasks.items.filter(t => t.project === from).map(t => t.id);
+  const merged = projects().includes(to);
+  if (projFilter === from) projFilter = to;
+  if (qaState.project === from) { qaState.project = to; syncQaControls(qaState); }
+  relabelProject(ids, to);
+  toast(merged ? `Merged "${from}" into "${to}"` : `Renamed "${from}" to "${to}"`, 'Undo', () => relabelProject(ids, from));
+}
+
+function deleteProject(name) {
+  const ids = tasks.items.filter(t => t.project === name).map(t => t.id);
+  if (projFilter === name) projFilter = '';
+  if (qaState.project === name) { qaState.project = ''; syncQaControls(qaState); }
+  relabelProject(ids, '');
+  toast(`Deleted project "${name}" (tasks kept)`, 'Undo', () => relabelProject(ids, name));
+}
+
+function renderProjectManager() {
+  const box = $('projManage');
+  box.hidden = !projManageOpen;
+  $('projManageBtn').setAttribute('aria-expanded', String(projManageOpen));
+  if (!projManageOpen) return;
+  box.textContent = '';
+  box.append(el('h4', null, 'Projects'));
+  const ps = projects();
+  if (!ps.length) box.append(el('div', 'task-empty', 'No projects yet. Add one with #name when you create a task.'));
+
+  ps.forEach(p => {
+    const row = el('div', 'proj-row');
+    if (p === projEditing) {
+      const form = el('form', 'proj-edit');
+      const input = el('input');
+      input.value = p;
+      input.setAttribute('aria-label', `New name for project ${p}`);
+      const save = el('button', 'primary small', 'Save'); save.type = 'submit';
+      const cancel = el('button', 'small', 'Cancel'); cancel.type = 'button';
+      const close = () => { projEditing = null; renderProjectManager(); };
+      cancel.addEventListener('click', close);
+      form.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+      form.addEventListener('submit', e => {
+        e.preventDefault();
+        if (!input.value.trim()) { input.focus(); return; }
+        projEditing = null;
+        renameProject(p, input.value);
+        renderProjectManager();
+      });
+      form.append(input, save, cancel);
+      row.append(form);
+      setTimeout(() => { input.focus(); input.select(); }, 0);
+    } else {
+      const all = tasks.items.filter(t => t.project === p);
+      const open = all.filter(t => !t.done).length;
+      const edit = el('button', 'small', 'Rename'); edit.type = 'button';
+      edit.addEventListener('click', () => { projEditing = p; renderProjectManager(); });
+      const del = el('button', 'small danger', 'Delete'); del.type = 'button';
+      del.title = 'Remove this project from its tasks (the tasks are kept)';
+      del.addEventListener('click', () => deleteProject(p));
+      row.append(el('span', 'proj-name', '# ' + p), el('span', 'proj-count', `${open} open · ${all.length} total`), edit, del);
+    }
+    box.append(row);
+  });
+}
+$('projManageBtn').addEventListener('click', () => {
+  projManageOpen = !projManageOpen;
+  projEditing = null;
+  renderProjectManager();
+});
 
 // ---------------------------------------------------------------- timer link
 function setCurrentTask(id) {
