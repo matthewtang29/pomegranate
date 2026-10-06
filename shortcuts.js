@@ -69,7 +69,18 @@ document.addEventListener('keydown', e => {
 });
 
 // ---------------------------------------------------------------- taskbar / home-screen shortcuts
-// The app is opened as ./?do=focus or ./?do=add from the shortcut menu
+// The app is opened as ./?do=focus or ./?do=add from the shortcut menu, or from
+// the global Windows hotkeys (hotkeys/install-hotkeys.ps1). With
+// "launch_handler": focus-existing in the manifest, a launch while the app is
+// already open reuses that window and arrives through launchQueue instead.
+function runLaunchAction(action, delay) {
+  // give the timer a moment to report in (a physical timer reconnects on launch)
+  setTimeout(() => {
+    if (action === 'focus') startClassicSession();
+    else if (action === 'add') openQuickAdd();
+  }, delay);
+}
+
 function handleLaunchAction() {
   const params = new URLSearchParams(location.search);
   const action = params.get('do');
@@ -77,9 +88,19 @@ function handleLaunchAction() {
   params.delete('do');
   const q = params.toString();
   history.replaceState(null, '', location.pathname + (q ? '?' + q : '') + location.hash);
-  // give the timer a moment to report in (a physical timer reconnects on launch)
-  setTimeout(() => {
-    if (action === 'focus') startClassicSession();
-    else if (action === 'add') openQuickAdd();
-  }, 600);
+  runLaunchAction(action, 600);
+}
+
+if ('launchQueue' in window) {
+  // a fresh window opened with ?do= gets its action from handleLaunchAction(),
+  // so skip the matching first launch it also receives here
+  let skipFirst = new URLSearchParams(location.search).has('do');
+  launchQueue.setConsumer(params => {
+    if (skipFirst) { skipFirst = false; return; }
+    if (!params.targetURL) return;
+    const action = new URL(params.targetURL).searchParams.get('do');
+    if (!action) return;
+    window.focus();
+    runLaunchAction(action, 100);
+  });
 }
