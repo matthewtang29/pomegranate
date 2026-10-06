@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preload" href="fonts/bungee.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=2026.10.02b">
+<link rel="stylesheet" href="style.css?v=2026.10.06b">
 <script>
   // Apply the saved theme before the page draws, so there's no flash of the default colors
   (function () {
@@ -48,6 +48,8 @@
         <h3>Alerts</h3>
         <label class="tm-check"><input type="checkbox" id="notifyChk"> Notify me when a timer ends</label>
         <p class="sync-note" id="notifyStatus"></p>
+        <p class="sync-note" id="pushStatus" hidden></p>
+        <button type="button" class="small" id="pushTest" hidden>Send a test alert</button>
         <label class="tm-check" id="wakeRow"><input type="checkbox" id="wakeChk"> Keep screen on during sessions</label>
         <hr class="tm-sep">
         <h3>Theme</h3>
@@ -138,7 +140,7 @@
       </div>
       <div class="row">
         <button id="startBtn" class="primary">Start session</button>
-        <button id="autoBtn" title="25 min focus, 5 min break, asks to continue after each cycle">Auto mode</button>
+        <button id="autoBtn" title="25 min focus, 5 min break, asks to continue after each cycle (Ctrl+0)">Auto mode</button>
       </div>
     </section>
 
@@ -182,7 +184,8 @@
   <p class="hint">
     No timer plugged in? Sessions run on the app's built-in timer, and everything is tracked the same way.
     To use your Pomodoro timer, connect it in Chrome or Edge. Close the Arduino IDE's Serial Monitor first, since only one program can use the port at a time.
-    Connecting restarts the Uno, so you'll hear the welcome tune. Press <kbd>Space</kbd> to pause or resume.
+    Connecting restarts the Uno, so you'll hear the welcome tune.<br>
+    Shortcuts: <kbd>Ctrl</kbd>+<kbd>Space</kbd> adds a task, <kbd>Ctrl</kbd>+<kbd>0</kbd> starts a 25/5 session, and <kbd>Space</kbd> pauses or resumes.
   </p>
   </div>
 
@@ -220,12 +223,8 @@
         <button type="button" data-view="all" aria-pressed="false">All</button>
         <button type="button" data-view="done" aria-pressed="false">Done</button>
       </div>
-      <div class="proj-tools">
-        <select id="projFilter" aria-label="Project filter"></select>
-        <button class="small" type="button" id="projManageBtn" aria-expanded="false" aria-controls="projManage">Manage</button>
-      </div>
+      <select id="projFilter" aria-label="Project filter"></select>
     </div>
-    <div class="card pad proj-manage" id="projManage" hidden></div>
     <div id="taskList"></div>
   </div>
 
@@ -393,18 +392,35 @@
   </div>
 </div>
 
+<!-- Quick add (Ctrl+Space anywhere) -->
+<dialog class="qa-dialog" id="qaDialog" aria-labelledby="qaDialogTitle">
+  <form id="qaDialogForm" autocomplete="off">
+    <h3 id="qaDialogTitle">Add a task</h3>
+    <div class="qa-row">
+      <input id="qaDialogInput" aria-label="New task" placeholder="e.g. Lab report fri p1 d4 #ECE140">
+      <button class="primary" type="submit">Add</button>
+    </div>
+    <div class="qa-preview" id="qaDialogPreview" aria-live="polite"></div>
+    <p class="qa-help">Due today unless you type a date. <kbd>Enter</kbd> adds it, <kbd>Esc</kbd> closes.
+      <button type="button" class="link-btn" id="qaDialogCancel">Cancel</button></p>
+  </form>
+</dialog>
+
 <div class="toast" id="toast" role="status"></div>
 
-<script src="app.js?v=2026.10.02b"></script>
-<script src="localtimer.js?v=2026.10.02b"></script>
-<script src="notify.js?v=2026.10.02b"></script>
-<script src="score.js?v=2026.10.02b"></script>
-<script src="analytics.js?v=2026.10.02b"></script>
-<script src="tasks.js?v=2026.10.02b"></script>
-<script src="calendar.js?v=2026.10.02b"></script>
-<script src="journal.js?v=2026.10.02b"></script>
-<script src="sync.js?v=2026.10.02b"></script>
-<script src="theme.js?v=2026.10.02b"></script>
-<script src="main.js?v=2026.10.02b"></script>
+<script src="app.js?v=2026.10.06b"></script>
+<script src="localtimer.js?v=2026.10.06b"></script>
+<script src="notify.js?v=2026.10.06b"></script>
+<script src="score.js?v=2026.10.06b"></script>
+<script src="analytics.js?v=2026.10.06b"></script>
+<script src="tasks.js?v=2026.10.06b"></script>
+<script src="calendar.js?v=2026.10.06b"></script>
+<script src="journal.js?v=2026.10.06b"></script>
+<script src="sync.js?v=2026.10.06b"></script>
+<script src="livesync.js?v=2026.10.06b"></script>
+<script src="push.js?v=2026.10.06b"></script>
+<script src="theme.js?v=2026.10.06b"></script>
+<script src="shortcuts.js?v=2026.10.06b"></script>
+<script src="main.js?v=2026.10.06b"></script>
 </body>
 </html>

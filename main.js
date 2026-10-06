@@ -87,7 +87,9 @@ render();
 LocalTimer.start();   // drives the app until a physical timer is connected
 Sync.start();         // reconnects cloud sync if you signed in before
 Notify.start();       // timer-finished alerts (settings in the ⚙ menu)
+Push.start();         // alerts while the app is closed (needs sign-in)
 showTab((location.hash || '').slice(1) || 'timer');
+handleLaunchAction();  // opened from a taskbar / home-screen shortcut (shortcuts.js)
 
 // The installed app reconnects to the timer it used last time, without the port picker
 if (isInstalledApp && 'serial' in navigator) {

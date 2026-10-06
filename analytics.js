@@ -56,6 +56,12 @@ function deskOf(d) { return d.focus + d.brk + d.other; }
 // at: when the state actually changed (the built-in timer passes exact times so
 // a throttled background tab still records the right amount of time)
 function trackState(prev, next, at) {
+  // a session shared from another device: that device records it, not this one
+  if (next.src === 'REMOTE') {
+    if (liveSession) finishSession('exited');
+    tick = null;
+    return;
+  }
   const now = at || Date.now();
   const local = next.src === 'LOCAL';
   // gaps longer than this are ignored (unplugged, laptop asleep). The built-in timer
@@ -107,6 +113,7 @@ function findSession(start) {
 }
 
 function trackEvent(name) {
+  if (status && status.src === 'REMOTE') return;   // recorded by the device that started it
   if (name === 'FOCUS_DONE') {
     getDay(dayKey(Date.now())).blocks++;
     if (liveSession) liveSession.blocks++;

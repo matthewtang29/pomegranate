@@ -96,6 +96,7 @@ async function disconnect() {
   if (readLoopDone) { try { await readLoopDone; } catch (e) {} }
   if (port) { try { await port.close(); } catch (e) {} }
   trackDisconnect();
+  if (typeof LiveSync !== 'undefined') LiveSync.physicalGone();
   port = null;
   status = null;
   log('— disconnected');
@@ -166,6 +167,7 @@ function handleLine(line, at) {
     });
     trackState(status ? status.state : null, s, at);
     status = s;
+    if (port && typeof LiveSync !== 'undefined') LiveSync.physical(s);   // show it on your other devices
     render();
     return;
   }
@@ -223,9 +225,11 @@ function render() {
   $('connectBtn').classList.toggle('primary', !connected);
   $('connectBtn').title = connected ? 'Disconnect the timer' : 'Connect your Pomodoro timer over USB';
   const pill = $('pill');
-  pill.className = 'pill' + (connected ? (ready ? ' on' : ' wait') : ' local');
-  pill.textContent = connected ? (ready ? 'Timer connected' : 'Waiting for timer…') : 'Built-in timer';
-  pill.title = connected ? '' : 'No timer connected: sessions run in the app. Connect to use your Pomodoro timer.';
+  const shared = !connected && ready && status.src === 'REMOTE' && !IDLE.includes(st);
+  pill.className = 'pill' + (connected ? (ready ? ' on' : ' wait') : shared ? ' shared' : ' local');
+  pill.textContent = connected ? (ready ? 'Timer connected' : 'Waiting for timer…') : shared ? 'Synced session' : 'Built-in timer';
+  pill.title = connected ? '' : shared ? 'This session was started on another of your devices. You can pause or exit it here too.'
+    : 'No timer connected: sessions run in the app. Connect to use your Pomodoro timer.';
   $('soundRow').hidden = local;
 
   // mute toggle (reflects the timer's actual setting)
@@ -378,7 +382,7 @@ function togglePause() {
   else if (status.state.startsWith('PAUSED')) send('RESUME');
 }
 document.addEventListener('keydown', e => {
-  if (e.code === 'Space' && !$('timerView').hidden &&
+  if (e.code === 'Space' && !e.ctrlKey && !e.metaKey && !e.altKey && !$('timerView').hidden &&
       !['INPUT', 'BUTTON', 'SUMMARY', 'SELECT', 'TEXTAREA'].includes(e.target.tagName)) {
     e.preventDefault();
     togglePause();

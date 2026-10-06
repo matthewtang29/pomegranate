@@ -2,10 +2,10 @@
 // Network first, and every request double-checks with GitHub that the file hasn't
 // changed (instead of trusting the browser's 10-minute cache), so updates you push
 // show up the next time the app opens. The cached copy is only used when offline.
-const CACHE = 'pomegranate-v8';
+const CACHE = 'pomegranate-v11';
 const ASSETS = [
   './', 'index.html', 'style.css',
-  'app.js', 'localtimer.js', 'notify.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'sync.js', 'theme.js', 'main.js',
+  'app.js', 'localtimer.js', 'notify.js', 'score.js', 'analytics.js', 'tasks.js', 'calendar.js', 'journal.js', 'sync.js', 'livesync.js', 'push.js', 'theme.js', 'shortcuts.js', 'main.js',
   'manifest.webmanifest', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png',
   'icons/bots/bolt.svg', 'icons/bots/visor.svg', 'icons/bots/gear.svg', 'fonts/bungee.woff2', 'fonts/nunito.woff2',
 ];
@@ -35,6 +35,26 @@ self.addEventListener('fetch', e => {
       .catch(() => caches.match(req, { ignoreSearch: true })
         .then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined)))
   );
+});
+
+// Alerts sent by the cloud function (focus done, break over, session complete).
+// They arrive even when the app is closed. If the app is on screen it already shows
+// its own message, so the system notification is skipped there, except on Apple
+// devices, which require every alert to be shown.
+self.addEventListener('push', e => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { body: e.data && e.data.text() }; }
+  e.waitUntil((async () => {
+    const list = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    const onScreen = list.some(c => c.visibilityState === 'visible');
+    const ua = self.navigator.userAgent;
+    const apple = /AppleWebKit/.test(ua) && !/Chrome|Chromium|CriOS|Edg|Android/.test(ua);
+    if (onScreen && !apple && !d.test) return;
+    await self.registration.showNotification(d.title || 'Pomegranate', {
+      body: d.body || '', icon: 'icons/icon-192.png', badge: 'icons/icon-192.png',
+      tag: d.tag || 'pomodoro-timer', renotify: true, vibrate: [200, 100, 200], data: { url: './' },
+    });
+  })());
 });
 
 // Clicking a "timer finished" notification brings the app back to the front

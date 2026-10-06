@@ -26,6 +26,7 @@ const Notify = (() => {
     if (!enabled || !supported || Notification.permission !== 'default') return permission();
     try { await Notification.requestPermission(); } catch (e) {}
     renderPanel();
+    if (typeof Push !== 'undefined') Push.sync();   // also set up alerts for when the app is closed
     return permission();
   }
 
@@ -75,8 +76,9 @@ const Notify = (() => {
   function event(name) {
     const msg = messageFor(name);
     if (!msg) return;
-    if (document.hidden) show(msg[0], msg[1]);
-    else toast(`${msg[0]} · ${msg[1]}`);
+    if (!document.hidden) toast(`${msg[0]} · ${msg[1]}`);
+    // in the background: the cloud alert covers it when it's set up on this device
+    else if (!(typeof Push !== 'undefined' && Push.active)) show(msg[0], msg[1]);
   }
 
   // ---------------------------------------------------------------- keep screen awake
@@ -129,7 +131,11 @@ const Notify = (() => {
   function setEnabled(on) {
     enabled = on;
     try { localStorage.setItem(PREF, on ? '1' : '0'); } catch (e) {}
-    if (on) ask().then(p => { if (p === 'granted') show('Notifications are on', "You'll be told when each timer ends."); });
+    if (on) ask().then(p => {
+      if (p === 'granted') show('Notifications are on', "You'll be told when each timer ends.");
+      if (typeof Push !== 'undefined') Push.sync();
+    });
+    else if (typeof Push !== 'undefined') Push.sync();   // turns off closed-app alerts too
     renderPanel();
   }
   function setKeepAwake(on) {

@@ -174,6 +174,7 @@ const Sync = (() => {
   }
   async function signOut() {
     await flush();
+    if (typeof Push !== 'undefined') await Push.forget();   // stop alerts on this device
     write(LS.enabled, false);
     if (auth) await auth.signOut();
   }
@@ -193,11 +194,15 @@ const Sync = (() => {
       col('meta').onSnapshot(s => onSnap('meta', s), err),
     ];
     db.collection(`users/${u.uid}/devices`).doc(deviceId).set({ name: deviceName, lastSeen: now() }).catch(() => {});
+    if (typeof LiveSync !== 'undefined') LiveSync.onAuth(u, db);   // shared timer sessions
+    if (typeof Push !== 'undefined') Push.onAuth(u, db);           // alerts while the app is closed
   }
   function onSignedOut() {
     unsubs.forEach(f => f());
     unsubs = [];
     user = null;
+    if (typeof LiveSync !== 'undefined') LiveSync.onAuth(null, null);
+    if (typeof Push !== 'undefined') Push.onAuth(null, null);
     setState('off');
   }
 
@@ -436,5 +441,6 @@ const Sync = (() => {
     prefetch: () => loadSdk().catch(() => {}),
     get signedIn() { return !!user; },
     get deviceId() { return deviceId; },
+    get deviceName() { return deviceName; },
   };
 })();

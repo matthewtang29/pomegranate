@@ -281,20 +281,7 @@ function taskRow(t, opts = {}) {
   if (t.project) meta.append(el('span', 'proj', '# ' + t.project));
   if (t.focusSec >= 60) meta.append(el('span', null, '⏱ ' + fmtSecs(t.focusSec)));
   if (t.id === currentTaskId) meta.append(el('span', 'pflag', '● on the timer'));
-  const subs = t.subtasks || [];
-  if (subs.length) {
-    const doneN = subs.filter(s => s.done).length;
-    const tog = el('button', 'sub-toggle' + (doneN === subs.length ? ' all' : ''), `☑ ${doneN}/${subs.length} subtasks`);
-    tog.type = 'button';
-    tog.setAttribute('aria-expanded', String(openSubs.has(t.id)));
-    tog.addEventListener('click', () => {
-      if (openSubs.has(t.id)) openSubs.delete(t.id); else openSubs.add(t.id);
-      refreshTaskViews();
-    });
-    meta.append(tog);
-  }
   body.append(meta);
-  if (subs.length && openSubs.has(t.id)) body.append(subtaskList(t));
 
   const actions = el('div', 't-actions');
   if (!t.done) {
@@ -313,62 +300,6 @@ function taskRow(t, opts = {}) {
 
   row.append(check, body, actions);
   return row;
-}
-
-// ---------------------------------------------------------------- subtasks
-// A checklist inside a task: t.subtasks = [{ id, title, done }]. Ticked off from
-// the task row; added, renamed and removed in the task editor (or added from the row).
-const openSubs = new Set();        // task ids whose subtask list is expanded
-
-function setSubtaskDone(taskId, subId, done) {
-  const t = taskById(taskId);
-  const s = t && (t.subtasks || []).find(x => x.id === subId);
-  if (!s) return;
-  s.done = done;
-  saveTasks();
-  refreshTaskViews();
-}
-
-function addSubtask(taskId, title) {
-  const t = taskById(taskId);
-  if (!t || !title) return;
-  t.subtasks = t.subtasks || [];
-  t.subtasks.push({ id: newId(), title, done: false });
-  openSubs.add(taskId);
-  saveTasks();
-  refreshTaskViews();
-}
-
-function subtaskList(t) {
-  const ul = el('ul', 'subtasks');
-  t.subtasks.forEach(s => {
-    const li = el('li', s.done ? 'done' : '');
-    const c = el('button', 'check');
-    c.type = 'button';
-    c.innerHTML = CHECK_SVG;
-    c.setAttribute('aria-label', s.done ? `Mark "${s.title}" not done` : `Complete "${s.title}"`);
-    c.addEventListener('click', () => setSubtaskDone(t.id, s.id, !s.done));
-    li.append(c, el('span', 's-title', s.title));
-    ul.append(li);
-  });
-  if (!t.done) {
-    const li = el('li', 'sub-add');
-    const form = el('form');
-    const input = el('input');
-    input.placeholder = '+ Add subtask';
-    input.setAttribute('aria-label', `Add a subtask to "${t.title}"`);
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      addSubtask(t.id, input.value.trim());
-      // the list was rebuilt; keep typing in the new one
-      const next = document.querySelector(`.task[data-id="${t.id}"] .sub-add input`);
-      if (next) next.focus();
-    });
-    form.append(input);
-    li.append(form);
-    ul.append(li);
-  }
-  return ul;
 }
 
 // Inline editor for a task
@@ -394,42 +325,6 @@ function taskEditor(t, onClose) {
   const dwrap = el('div', 'diff-field'); dwrap.append(el('span', null, 'Difficulty'), diffPick);
   opts.append(lab('Due', due), lab('Priority', pri), dwrap, lab('Project', proj));
 
-  // subtasks are edited on a copy and only saved with the task
-  const subs = (t.subtasks || []).map(s => ({ ...s }));
-  const subBox = el('div', 'te-subs');
-  const subAdd = el('input', 'te-sub-input');
-  subAdd.placeholder = 'Add a subtask and press Enter';
-  subAdd.setAttribute('aria-label', 'New subtask');
-  subAdd.addEventListener('keydown', e => {
-    if (e.key !== 'Enter') return;
-    e.preventDefault();
-    const v = subAdd.value.trim();
-    if (!v) return;
-    subs.push({ id: newId(), title: v, done: false });
-    subAdd.value = '';
-    paintSubs();
-    subAdd.focus();
-  });
-  const paintSubs = () => {
-    subBox.textContent = '';
-    subBox.append(el('span', 'te-subs-label', 'Subtasks'));
-    subs.forEach((s, i) => {
-      const row = el('div', 'te-sub');
-      const inp = el('input', 'te-sub-input');
-      inp.value = s.title;
-      inp.setAttribute('aria-label', `Subtask ${i + 1}`);
-      inp.addEventListener('input', () => { s.title = inp.value; });
-      const rm = el('button', 'small', '✕');
-      rm.type = 'button';
-      rm.setAttribute('aria-label', `Remove subtask "${s.title}"`);
-      rm.addEventListener('click', () => { subs.splice(i, 1); paintSubs(); });
-      row.append(inp, rm);
-      subBox.append(row);
-    });
-    subBox.append(subAdd);
-  };
-  paintSubs();
-
   const buttons = el('div', 'te-buttons');
   const save = el('button', 'primary small', 'Save'); save.type = 'submit';
   const cancel = el('button', 'small', 'Cancel'); cancel.type = 'button';
@@ -447,17 +342,13 @@ function taskEditor(t, onClose) {
     t.priority = Number(pri.value);
     t.difficulty = diffVal;
     t.project = proj.value.trim().replace(/^#/, '');
-    if (subAdd.value.trim()) subs.push({ id: newId(), title: subAdd.value.trim(), done: false });
-    subs.forEach(s => { s.title = s.title.trim(); });
-    t.subtasks = subs.filter(s => s.title);
-    if (!t.subtasks.length) delete t.subtasks;
     saveTasks();
     editingId = null;
     refreshTaskViews();
     if (onClose) onClose();
   });
   box.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-  box.append(title, opts, subBox, buttons);
+  box.append(title, opts, buttons);
   setTimeout(() => title.focus(), 0);
   return box;
 }
@@ -573,90 +464,7 @@ function renderProjectLists() {
   ps.forEach(p => sel.append(new Option('# ' + p, p)));
   sel.value = ps.includes(cur) ? cur : '';
   projFilter = sel.value;
-  renderProjectManager();
 }
-
-// ---------------------------------------------------------------- manage projects
-// Projects only exist as labels on tasks, so renaming or deleting one rewrites
-// the label on every task that has it (tasks themselves are kept on delete).
-let projManageOpen = false;
-let projEditing = null;
-
-function relabelProject(ids, name) {
-  ids.forEach(id => { const t = taskById(id); if (t) t.project = name; });
-  saveTasks();
-  refreshTaskViews();
-}
-
-function renameProject(from, to) {
-  to = to.trim().replace(/^#/, '');
-  if (!to || to === from) return;
-  const ids = tasks.items.filter(t => t.project === from).map(t => t.id);
-  const merged = projects().includes(to);
-  if (projFilter === from) projFilter = to;
-  if (qaState.project === from) { qaState.project = to; syncQaControls(qaState); }
-  relabelProject(ids, to);
-  toast(merged ? `Merged "${from}" into "${to}"` : `Renamed "${from}" to "${to}"`, 'Undo', () => relabelProject(ids, from));
-}
-
-function deleteProject(name) {
-  const ids = tasks.items.filter(t => t.project === name).map(t => t.id);
-  if (projFilter === name) projFilter = '';
-  if (qaState.project === name) { qaState.project = ''; syncQaControls(qaState); }
-  relabelProject(ids, '');
-  toast(`Deleted project "${name}" (tasks kept)`, 'Undo', () => relabelProject(ids, name));
-}
-
-function renderProjectManager() {
-  const box = $('projManage');
-  box.hidden = !projManageOpen;
-  $('projManageBtn').setAttribute('aria-expanded', String(projManageOpen));
-  if (!projManageOpen) return;
-  box.textContent = '';
-  box.append(el('h4', null, 'Projects'));
-  const ps = projects();
-  if (!ps.length) box.append(el('div', 'task-empty', 'No projects yet. Add one with #name when you create a task.'));
-
-  ps.forEach(p => {
-    const row = el('div', 'proj-row');
-    if (p === projEditing) {
-      const form = el('form', 'proj-edit');
-      const input = el('input');
-      input.value = p;
-      input.setAttribute('aria-label', `New name for project ${p}`);
-      const save = el('button', 'primary small', 'Save'); save.type = 'submit';
-      const cancel = el('button', 'small', 'Cancel'); cancel.type = 'button';
-      const close = () => { projEditing = null; renderProjectManager(); };
-      cancel.addEventListener('click', close);
-      form.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
-      form.addEventListener('submit', e => {
-        e.preventDefault();
-        if (!input.value.trim()) { input.focus(); return; }
-        projEditing = null;
-        renameProject(p, input.value);
-        renderProjectManager();
-      });
-      form.append(input, save, cancel);
-      row.append(form);
-      setTimeout(() => { input.focus(); input.select(); }, 0);
-    } else {
-      const all = tasks.items.filter(t => t.project === p);
-      const open = all.filter(t => !t.done).length;
-      const edit = el('button', 'small', 'Rename'); edit.type = 'button';
-      edit.addEventListener('click', () => { projEditing = p; renderProjectManager(); });
-      const del = el('button', 'small danger', 'Delete'); del.type = 'button';
-      del.title = 'Remove this project from its tasks (the tasks are kept)';
-      del.addEventListener('click', () => deleteProject(p));
-      row.append(el('span', 'proj-name', '# ' + p), el('span', 'proj-count', `${open} open · ${all.length} total`), edit, del);
-    }
-    box.append(row);
-  });
-}
-$('projManageBtn').addEventListener('click', () => {
-  projManageOpen = !projManageOpen;
-  projEditing = null;
-  renderProjectManager();
-});
 
 // ---------------------------------------------------------------- timer link
 function setCurrentTask(id) {
