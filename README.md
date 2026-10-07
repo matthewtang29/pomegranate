@@ -8,12 +8,12 @@ A study planner and Pomodoro timer web app. It controls my custom Arduino Pomodo
 - **Synced sessions:** start a session on one device and it runs on all your signed-in devices; pause, resume or exit from any of them (also works for the physical timer)
 - **Timer alerts:** a notification on every device when a focus block, break, or session ends, even when the app is closed (via a small cloud function), plus an option to keep the screen awake during sessions
 - **Tasks tab:** a Todoist-style task list with natural-language quick add (`Lab report fri p1 d4 #ECE140`), priorities, difficulty ratings (1–5), projects, and Today / Upcoming / All / Done views
+- **Subtasks:** break any task into a checklist; tick items off on the Tasks tab, in the Calendar, or right under the timer while you focus
 - **Link tasks to sessions:** pick what you're working on and focus time is credited to that task
 - **Calendar tab:** month view of tasks due, each day's productivity score, and your day rating (switch between showing both, productivity, or day rating)
 - **Journal tab:** write about your day and rate it out of 10 (1–3 red, 4–5 orange, 6–8 yellow, 9–10 green), with a 14-day overview; ratings color the calendar and are kept separate from the productivity score
 - **Analytics tab:** daily productivity score, desk / focus / break time compared with yesterday and last week, and up to 30 days of history
 - **Keyboard shortcuts:** `Ctrl+Space` adds a task and `Ctrl+0` starts a 25/5 session from any tab (`Space` pauses / resumes); the installed app's taskbar menu has "Start 25/5 session" and "Add a task" too
-- **Global hotkeys (Windows):** `Ctrl+Alt+Space` adds a task and `Ctrl+Alt+0` starts a 25/5 session from anywhere, even when the app is closed. Install the app, then run `powershell -ExecutionPolicy Bypass -File hotkeys\install-hotkeys.ps1` (add `-Uninstall` to remove them)
 - **Installable app** that works offline and reconnects to the timer automatically
 - **Themes:** a playful robot-lab look matching my website (chunky type, outlined cards, robot mascots), in system / light / dark, plus 8 accent colors or any custom color
 - **Cloud sync:** sign in with Google to sync tasks, journal, study history and settings between computer and phone (Firebase)
@@ -81,7 +81,6 @@ livesync.js                     Shared timer sessions across devices
 push.js                         Alerts while the app is closed (Web Push)
 theme.js                        Theme settings
 shortcuts.js                    Keyboard shortcuts and the quick-add box
-hotkeys/install-hotkeys.ps1     Sets up the global Windows hotkeys
 main.js                         Tabs, install-as-app, start-up
 manifest.webmanifest, sw.js     Installable app (PWA) setup
 icons/                          App icons and robot mascots (icons/bots/)

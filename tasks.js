@@ -2,6 +2,8 @@
 // A small Todoist-style task list: quick add with shortcuts, priorities p1–p4,
 // difficulty 1–5, #projects, due dates, and Today / Upcoming / All / Done views.
 // Tasks can be linked to the timer so focus time is credited to them.
+// Each task can have a checklist of subtasks (stored on the task as
+// subtasks: [{ id, title, done }], so they sync and back up with it).
 
 const TASKS_KEY = 'pomodoro-tasks-v1';
 let tasks = loadTasks();
@@ -190,6 +192,107 @@ function refreshTaskViews() {
   if (!$('analyticsView').hidden) renderAnalytics();
   renderTimerTask();
   renderProjectLists();
+  if (focusSub) {   // keep typing: put the cursor back in the "add a subtask" box
+    const box = [...document.querySelectorAll('[data-sub-input]')].find(i => i.dataset.subInput === focusSub && i.offsetParent);
+    if (box) box.focus();
+    focusSub = null;
+  }
+}
+
+// ---------------------------------------------------------------- subtasks
+const openSubs = new Set();   // tasks whose checklist is showing
+let focusSub = null;          // task whose "add a subtask" box should get the cursor next
+function subsOf(t) { return Array.isArray(t.subtasks) ? t.subtasks : []; }
+
+function addSubtask(id, title) {
+  const t = taskById(id);
+  if (!t || !title.trim()) return;
+  t.subtasks = [...subsOf(t), { id: newId(), title: title.trim(), done: false }];
+  openSubs.add(id);
+  saveTasks();
+  refreshTaskViews();
+}
+function toggleSubtask(id, sid) {
+  const t = taskById(id);
+  const s = t && subsOf(t).find(x => x.id === sid);
+  if (!s) return;
+  s.done = !s.done;
+  saveTasks();
+  refreshTaskViews();
+  if (s.done && !t.done && subsOf(t).every(x => x.done)) {
+    toast(`All subtasks of "${t.title}" done`, 'Complete task', () => setTaskDone(id, true));
+  }
+}
+function deleteSubtask(id, sid) {
+  const t = taskById(id);
+  const list = t ? subsOf(t) : [];
+  const i = list.findIndex(x => x.id === sid);
+  if (i < 0) return;
+  const [gone] = list.splice(i, 1);
+  t.subtasks = list;
+  saveTasks();
+  refreshTaskViews();
+  toast(`Deleted subtask "${gone.title}"`, 'Undo', () => {
+    const now = subsOf(t);
+    now.splice(i, 0, gone);
+    t.subtasks = now;
+    saveTasks();
+    refreshTaskViews();
+  });
+}
+
+// The checklist under a task (Tasks tab, Calendar day panel, Timer tab)
+function subtaskList(t) {
+  const box = el('div', 'subtasks');
+  subsOf(t).forEach(s => {
+    const row = el('div', 'subtask' + (s.done ? ' done' : ''));
+    const c = el('button', 'sub-check');
+    c.type = 'button';
+    c.innerHTML = CHECK_SVG;
+    c.setAttribute('aria-pressed', String(!!s.done));
+    c.setAttribute('aria-label', `${s.done ? 'Mark not done' : 'Complete'}: ${s.title}`);
+    c.addEventListener('click', () => toggleSubtask(t.id, s.id));
+    const del = el('button', 'sub-del', '×');
+    del.type = 'button';
+    del.title = 'Delete subtask';
+    del.setAttribute('aria-label', `Delete subtask "${s.title}"`);
+    del.addEventListener('click', () => deleteSubtask(t.id, s.id));
+    row.append(c, el('span', 'sub-title', s.title), del);
+    box.append(row);
+  });
+  if (!t.done) {
+    const f = el('form', 'sub-add');
+    f.autocomplete = 'off';
+    const i = el('input');
+    i.placeholder = 'Add a subtask…';
+    i.dataset.subInput = t.id;
+    i.setAttribute('aria-label', `New subtask for "${t.title}"`);
+    i.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && !i.value) { e.preventDefault(); openSubs.delete(t.id); refreshTaskViews(); }
+    });
+    f.append(i);
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      if (!i.value.trim()) return;
+      focusSub = t.id;
+      addSubtask(t.id, i.value);
+    });
+    box.append(f);
+  }
+  return box;
+}
+
+// The checklist for the task on the timer, under "Working on"
+function renderTimerSubs() {
+  const box = $('timerSubs');
+  if (!box) return;
+  const t = currentTaskId ? taskById(currentTaskId) : null;
+  const sig = t ? t.id + JSON.stringify(subsOf(t)) : '';
+  if (sig === box.dataset.sig) return;   // unchanged: don't rebuild (keeps typing in the box)
+  box.dataset.sig = sig;
+  box.textContent = '';
+  box.hidden = !t;
+  if (t) box.append(subtaskList(t));
 }
 
 // ---------------------------------------------------------------- task list
@@ -281,7 +384,20 @@ function taskRow(t, opts = {}) {
   if (t.project) meta.append(el('span', 'proj', '# ' + t.project));
   if (t.focusSec >= 60) meta.append(el('span', null, '⏱ ' + fmtSecs(t.focusSec)));
   if (t.id === currentTaskId) meta.append(el('span', 'pflag', '● on the timer'));
+  const subs = subsOf(t);
+  if (subs.length) {
+    const open = openSubs.has(t.id);
+    const n = subs.filter(s => s.done).length;
+    const tog = el('button', 'sub-toggle' + (open ? ' open' : '') + (n === subs.length ? ' all' : ''), `${n}/${subs.length}`);
+    tog.type = 'button';
+    tog.title = open ? 'Hide subtasks' : 'Show subtasks';
+    tog.setAttribute('aria-expanded', String(open));
+    tog.setAttribute('aria-label', `${n} of ${subs.length} subtasks done. ${open ? 'Hide' : 'Show'} subtasks`);
+    tog.addEventListener('click', () => { if (open) openSubs.delete(t.id); else openSubs.add(t.id); refreshTaskViews(); });
+    meta.prepend(tog);
+  }
   body.append(meta);
+  if (openSubs.has(t.id)) body.append(subtaskList(t));
 
   const actions = el('div', 't-actions');
   if (!t.done) {
@@ -290,6 +406,15 @@ function taskRow(t, opts = {}) {
     focus.title = 'Work on this with the timer';
     focus.addEventListener('click', () => { setCurrentTask(t.id); showTab('timer'); });
     actions.append(focus);
+  }
+  if (!t.done) {
+    const sub = el('button', 't-sub');
+    sub.type = 'button';
+    sub.append('＋', el('span', 't-edit-label', ' Subtask'));
+    sub.title = 'Add a subtask';
+    sub.setAttribute('aria-label', `Add a subtask to "${t.title}"`);
+    sub.addEventListener('click', () => { openSubs.add(t.id); focusSub = t.id; refreshTaskViews(); });
+    actions.append(sub);
   }
   const edit = el('button', 't-edit');
   edit.type = 'button';
@@ -477,6 +602,7 @@ try { currentTaskId = localStorage.getItem('pomodoro-current-task') || null; } c
 if (currentTaskId && (!taskById(currentTaskId) || taskById(currentTaskId).done)) currentTaskId = null;
 
 function renderTimerTask() {
+  renderTimerSubs();
   const sel = $('taskSelect');
   if (!sel || document.activeElement === sel) return;   // don't rebuild while the user is choosing
   const today = todayKey();

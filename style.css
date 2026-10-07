@@ -883,3 +883,34 @@ summary { font-weight: 800; }
 .qa-dialog .qa-help { margin-top: 12px; }
 .link-btn { background: none; border: 0; box-shadow: none; padding: 0 0 0 6px; font: inherit; font-weight: 800; color: var(--accent); text-decoration: underline; cursor: pointer; }
 .link-btn:hover:not(:disabled) { transform: none; box-shadow: none; }
+
+/* ---------- subtasks ---------- */
+.sub-toggle {
+  display: inline-flex; align-items: center; gap: 4px; padding: 0 8px; border-radius: 999px;
+  border: 2px solid var(--line); background: none; color: var(--muted); font-size: 12px; font-weight: 800; line-height: 18px;
+}
+.sub-toggle::before { content: '▸'; transition: transform .15s; }
+.sub-toggle.open::before { transform: rotate(90deg); }
+.sub-toggle.all { color: var(--rest); border-color: color-mix(in srgb, var(--rest) 50%, var(--line)); }
+.sub-toggle:hover:not(:disabled) { border-color: var(--ink); color: var(--text); }
+.subtasks { margin: 8px 0 2px; padding-left: 10px; border-left: 2px dashed var(--line); display: grid; gap: 2px; }
+.subtask { display: flex; align-items: center; gap: 8px; font-size: 14px; min-height: 26px; }
+.sub-title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.subtask.done .sub-title { text-decoration: line-through; color: var(--muted); }
+.sub-check {
+  flex: none; width: 17px; height: 17px; padding: 0; border-radius: 5px; border: 2px solid var(--muted);
+  background: transparent; color: transparent; display: grid; place-items: center;
+}
+.sub-check svg { width: 10px; height: 10px; }
+.sub-check:hover:not(:disabled) { border-color: var(--rest); color: var(--rest); }
+.subtask.done .sub-check { background: var(--rest); border-color: var(--rest); color: #fff; }
+.sub-del { flex: none; padding: 0 6px; border: 0; background: none; color: var(--muted); font-size: 17px; line-height: 1; opacity: 0; }
+.subtask:hover .sub-del, .sub-del:focus-visible { opacity: 1; }
+.sub-del:hover:not(:disabled) { color: var(--down); }
+@media (hover: none) { .sub-del { opacity: .6; } }
+.sub-add input {
+  width: 100%; margin-top: 4px; font: inherit; font-size: 13px; font-weight: 600; color: var(--text);
+  background: transparent; border: 2px dashed var(--line); border-radius: 10px; padding: 5px 9px;
+}
+.sub-add input:focus { border-style: solid; border-color: var(--ink); outline: 3px solid var(--teal); outline-offset: 1px; }
+.timer-subs { max-width: 420px; margin: -6px auto 16px; }

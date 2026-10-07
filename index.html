@@ -12,7 +12,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preload" href="fonts/bungee.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/nunito.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="style.css?v=2026.10.06b">
+<link rel="stylesheet" href="style.css?v=2026.10.06c">
 <script>
   // Apply the saved theme before the page draws, so there's no flash of the default colors
   (function () {
@@ -103,6 +103,7 @@
       <select id="taskSelect"></select>
       <button id="taskDoneBtn" type="button" class="small" hidden>✓ Mark done</button>
     </div>
+    <div class="timer-subs" id="timerSubs" hidden></div>
 
     <!-- Set up a session -->
     <section class="panel" id="setupPanel">
@@ -186,7 +187,6 @@
     To use your Pomodoro timer, connect it in Chrome or Edge. Close the Arduino IDE's Serial Monitor first, since only one program can use the port at a time.
     Connecting restarts the Uno, so you'll hear the welcome tune.<br>
     Shortcuts: <kbd>Ctrl</kbd>+<kbd>Space</kbd> adds a task, <kbd>Ctrl</kbd>+<kbd>0</kbd> starts a 25/5 session, and <kbd>Space</kbd> pauses or resumes.
-    Add <kbd>Alt</kbd> to use them from anywhere in Windows, even with the app closed (set up with <code>hotkeys\install-hotkeys.ps1</code>).
   </p>
   </div>
 
@@ -409,19 +409,19 @@
 
 <div class="toast" id="toast" role="status"></div>
 
-<script src="app.js?v=2026.10.06b"></script>
-<script src="localtimer.js?v=2026.10.06b"></script>
-<script src="notify.js?v=2026.10.06b"></script>
-<script src="score.js?v=2026.10.06b"></script>
-<script src="analytics.js?v=2026.10.06b"></script>
-<script src="tasks.js?v=2026.10.06b"></script>
-<script src="calendar.js?v=2026.10.06b"></script>
-<script src="journal.js?v=2026.10.06b"></script>
-<script src="sync.js?v=2026.10.06b"></script>
-<script src="livesync.js?v=2026.10.06b"></script>
-<script src="push.js?v=2026.10.06b"></script>
-<script src="theme.js?v=2026.10.06b"></script>
+<script src="app.js?v=2026.10.06c"></script>
+<script src="localtimer.js?v=2026.10.06c"></script>
+<script src="notify.js?v=2026.10.06c"></script>
+<script src="score.js?v=2026.10.06c"></script>
+<script src="analytics.js?v=2026.10.06c"></script>
+<script src="tasks.js?v=2026.10.06c"></script>
+<script src="calendar.js?v=2026.10.06c"></script>
+<script src="journal.js?v=2026.10.06c"></script>
+<script src="sync.js?v=2026.10.06c"></script>
+<script src="livesync.js?v=2026.10.06c"></script>
+<script src="push.js?v=2026.10.06c"></script>
+<script src="theme.js?v=2026.10.06c"></script>
 <script src="shortcuts.js?v=2026.10.06c"></script>
-<script src="main.js?v=2026.10.06b"></script>
+<script src="main.js?v=2026.10.06c"></script>
 </body>
 </html>
