@@ -1,4 +1,4 @@
-# Pomodoro Timer + Pomegranate
+# Pomodoro Timer
 
 A Pomodoro study timer in two halves:
 
